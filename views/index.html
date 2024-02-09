@@ -4,10 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ .Title }}</title>
-  <link rel="stylesheet" href="/static/tailwind.css" />
+  <link rel="stylesheet" href="/static/css/tailwind.css" />
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
-<body class="bg-white">
-  
+<body class="bg-light">
+  <main>
+    <div class="grid place-items-center mt-20">
+      <img src="/static/assets/logo_black.svg" alt="Logo">
+      <span class="text-4xl font-title mt-4">@samluiz</span>
+    </div>
+    <div class="max-w-2xl mx-auto mt-10">
+      <p class="text-center text-3xl font-body">Software engineer.<br>Proficiency in Java and Go.<br>Comfortable with React and Astro. <br>Currently at IBM.</p>
+    </div>
+  </main>
 </body>
+
+<style>
+  @import url('https://fonts.cdnfonts.com/css/post-no-bills-colombo');
+  @import url('https://fonts.googleapis.com/css2?family=Scope+One&display=swap');
+
+  body {
+    font-family: 'Post No Bills Colombo', sans-serif;
+  }
+</style>
+
 </html>

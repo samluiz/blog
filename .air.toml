@@ -5,11 +5,11 @@ tmp_dir = "tmp"
 [build]
   args_bin = []
   bin = "tmp\\main.exe"
-  pre_cmd = ["npx tailwindcss -i ./static/main.css -o ./static/tailwind.css"]
+  pre_cmd = ["npx tailwindcss -i ./static/css/main.css -o ./static/css/tailwind.css"]
   cmd = "go build -o ./tmp/main.exe ./cmd/main.go"
   post_cmd = []
   delay = 1000
-  exclude_dir = ["static", "tmp"]
+  exclude_dir = ["static", "tmp", "pkg", "common", "scripts"]
   exclude_file = []
   exclude_regex = ["_test.go"]
   exclude_unchanged = false
