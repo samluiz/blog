@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -47,5 +48,7 @@ func main() {
 		return c.Render("index", Posts)
 	})
 
-	log.Fatal(app.Listen(":3000"))
+	port := os.Getenv("PORT")
+
+	log.Fatal(app.Listen(":" + port))
 }
