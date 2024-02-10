@@ -37,10 +37,10 @@ type GetPostOutput struct {
 
 
 type CreatePostInput struct {
-	Title       string 		`db:"title" validate:"required"`
-	Content     string 		`db:"content" validate:"required"`
-	IsPublished bool 			`db:"is_published" validate:"required"`
-	AuthorID    int 			`db:"author_id" validate:"required"`
+	Title       string 		`db:"title"`
+	Content     string 		`db:"content"`
+	IsPublished bool 			`db:"is_published"`
+	AuthorID    int 			`db:"author_id"`
 	Tags        []string 	`db:"tags"`
 }
 

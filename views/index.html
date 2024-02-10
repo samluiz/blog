@@ -3,18 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ .Title }}</title>
+  <title>@samluiz</title>
   <link rel="stylesheet" href="/static/css/tailwind.css" />
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
 <body class="bg-light">
-  <main>
-    <div class="grid place-items-center mt-20">
-      <img src="/static/assets/logo_black.svg" alt="Logo">
-      <span class="text-4xl font-title mt-4">@samluiz</span>
-    </div>
-    <div class="max-w-2xl mx-auto mt-10">
-      <p class="text-center text-3xl font-body">Software engineer.<br>Proficiency in Java and Go.<br>Comfortable with React and Astro. <br>Currently at IBM.</p>
+  <main class="min-h-[calc(100vh - 80px)]">
+    <div class="grid grid-flow-row mt-20">
+      <div class="grid place-items-center top-20">
+        <img src="/static/assets/logo_black.svg" alt="Logo">
+        <h1 class="text-4xl font-title mt-4">@samluiz</h1>
+      </div>
+      <div class="max-w-3xl mx-auto mt-10">
+        <p class="text-center text-3xl">Software engineer. Proficiency in Java and Go. Comfortable with React and Astro. Currently at IBM.</p>
+      </div>
+      <section class="max-w-2xl mx-auto w-56 text-center mt-14 mb-6">
+        <span class="text-2xl">Recent articles</span>
+      {{ range .Posts }}
+      <div class="grid place-items-start w-full mt-8 py-2 text-start">
+        <p class="text-sm font-medium text-gray-light">{{ .PublishedAt }}</p>
+        <a href="/123">
+          <h2 class="text-xl underline decoration-solid decoration-black decoration-1">{{ .Title }}</h2>
+        </a>
+      </div>
+      {{ end }}
+      </section>
+      <div class="w-screen text-center">
+        <a href="/123" class="text-lg underline">See all posts</a>
+      </div>
     </div>
   </main>
 </body>
@@ -23,8 +39,8 @@
   @import url('https://fonts.cdnfonts.com/css/post-no-bills-colombo');
   @import url('https://fonts.googleapis.com/css2?family=Scope+One&display=swap');
 
-  body {
-    font-family: 'Post No Bills Colombo', sans-serif;
+  body, html {
+    font-family: 'Scope One', sans-serif;
   }
 </style>
 

@@ -52,19 +52,39 @@ func (r *repository) FindCommentsByUserId(userId int) ([]*types.Comment, error) 
 
 func (r *repository) CreateComment(input *types.CreateCommentInput) (*types.Comment, error) {
 	var comment types.Comment
-	err := r.db.Get(&comment, "INSERT INTO comments (author_id, post_id, content) VALUES ($1, $2, $3) RETURNING *", input.AuthorID, input.PostID, input.Content)
+	res := r.db.MustExec("INSERT INTO comments (author_id, post_id, content) VALUES ($1, $2, $3) RETURNING *", input.AuthorID, input.PostID, input.Content)
+
+	idCreated, err := res.LastInsertId()  
+
 	if err != nil {
 		return nil, err
 	}
+
+	err = r.db.Get(&comment, "SELECT * FROM comments WHERE id = $1", idCreated)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &comment, nil
 }
 
 func (r *repository) UpdateComment(id int, input *types.UpdateCommentInput) (*types.Comment, error) {
 	var comment types.Comment
-	err := r.db.Get(&comment, "UPDATE comments SET content = $1 WHERE id = $2 RETURNING *", input.Content, id)
+	res := r.db.MustExec("UPDATE comments SET content = $1 WHERE id = $2 RETURNING *", input.Content, id)
+
+	_, err := res.RowsAffected()
+
 	if err != nil {
 		return nil, err
 	}
+
+	err = r.db.Get(&comment, "SELECT * FROM comments WHERE id = $1", id)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &comment, nil
 }
 
