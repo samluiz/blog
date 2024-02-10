@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 const (
 	PRIVATE = "PRIVATE"
@@ -53,3 +56,7 @@ type UpdatePostInput struct {
 type PublishPostInput struct {
 	IsPublished bool `db:"is_published"`
 }
+
+var (
+	ErrPostNotFound = errors.New("Post not found.")
+)

@@ -22,8 +22,9 @@ func NewRepository(db *sqlx.DB) Repository {
 func (r *repository) FindUserById(id int) (*types.GetUserOutput, error) {
 	var user types.GetUserOutput
 	err := r.db.Get(&user, "SELECT id, username, is_admin, avatar, created_at, updated_at FROM users WHERE id = $1", id)
+
 	if err != nil {
-		return nil, err
+		return nil, types.ErrUserNotFound
 	}
 	return &user, nil
 }
@@ -32,7 +33,7 @@ func (r *repository) FindUserByUsername(username string) (*types.GetUserOutput, 
 	var user types.GetUserOutput
 	err := r.db.Get(&user, "SELECT id, username, is_admin, avatar, created_at, updated_at FROM users WHERE username = $1", username)
 	if err != nil {
-		return nil, err
+		return nil, types.ErrUserNotFound
 	}
 	return &user, nil
 }
