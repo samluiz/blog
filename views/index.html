@@ -6,18 +6,36 @@
   <title>@samluiz</title>
   <link rel="stylesheet" href="/static/css/tailwind.css" />
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-light">
   <main class="min-h-[calc(100vh - 80px)]">
     <div class="grid grid-flow-row mt-20">
-      <div class="grid place-items-center top-20">
+      <div class="grid place-items-center">
         <img src="/static/assets/logo_black.svg" alt="Logo">
-        <h1 class="text-4xl font-title mt-4">@samluiz</h1>
+        <div x-data="{ isOpen: false }" class="relative">
+          <h1 @mouseenter="isOpen = true" @mouseleave="isOpen = false" class="text-4xl font-title mt-4 focus:outline-none focus:ring focus:border-blue-300">@samluiz</h1>
+          <ul x-data="{
+            socials: [
+              { name: 'GitHub', link: 'https://github.com/samluiz' },
+              { name: 'Twitter', link: 'https://x.com/samluiz_x' },
+              { name: 'LinkedIn', link: 'https://www.linkedin.com/in/samuelluizrl/' }
+            ]
+          }" x-show="isOpen" @mouseenter="isOpen = true" @mouseleave="isOpen = false" class="absolute mt-1 w-full bg-light">
+            <template x-for="social in socials" :key="social.name">
+              <li class="py-2 px-4 cursor-pointer hover:bg-gray-100 duration-150">
+                <a :href="social.link" target="_blank" class="grid place-items-center grid-flow-col space-x-2">
+                  <span x-text="social.name" class="font-body font-semibold antialiased"></span>
+                </a>
+              </li>
+            </template>
+          </ul>
+        </div>
       </div>
-      <div class="max-w-3xl mx-auto mt-10">
-        <p class="text-center text-3xl">Software engineer. Proficiency in Java and Go. Comfortable with React and Astro. Currently at IBM.</p>
+      <div class="max-w-xl sm:max-w-2xl md:max-w-3xl px-2 mx-auto mt-10">
+        <p class="text-center text-xl sm:text-2xl md:text-3xl">Software engineer. Proficiency in Java and Go. Comfortable with React and Astro. Currently at IBM.</p>
       </div>
-      <section class="max-w-2xl mx-auto w-56 text-center mt-14 mb-6">
+      <section class="max-w-2xl mx-auto w-56 text-center mt-10 mb-6">
         <span class="text-2xl">Recent articles</span>
       {{ range .Posts }}
       <div class="grid place-items-start w-full mt-8 py-2 text-start">
@@ -28,7 +46,7 @@
       </div>
       {{ end }}
       </section>
-      <div class="w-screen text-center">
+      <div class="text-center">
         <a href="/123" class="text-lg underline">See all posts</a>
       </div>
     </div>
