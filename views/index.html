@@ -11,11 +11,14 @@
 </head>
 <body class="bg-light">
   <main class="min-h-[calc(100vh - 80px)]">
-    <div class="grid grid-flow-row mt-8 md:mt-20">
+    <div class="grid grid-flow-row mt-8">
       <div class="grid place-items-center">
         <img src="/static/assets/logo_black.svg" alt="Logo">
-        <div x-data="{ isOpen: false }" class="relative">
-          <h1 @mouseenter="isOpen = true" @mouseleave="isOpen = false" class="text-4xl font-title mt-4 focus:outline-none focus:ring focus:border-blue-300">@samluiz</h1>
+        <div x-data="{ 
+          isOpen: false,
+          loaded: true
+        }" x-init="setTimeout(() => { loaded = false; }, 3000)" class="relative">
+          <h1 x-bind:class="{ 'blink': loaded }" @mouseenter="isOpen = true" @mouseleave="isOpen = false" class="text-4xl font-title mt-4 focus:outline-none focus:ring focus:border-blue-300">@samluiz</h1>
           <ul x-data="{
             socials: [
               { name: 'GitHub', link: 'https://github.com/samluiz' },
@@ -61,6 +64,16 @@
   body, html {
     font-family: 'Scope One', sans-serif;
   }
+
+  .blink {
+        animation: blinker 1s infinite;
+    }
+      
+    @keyframes blinker {
+        from { opacity: 1.0; }
+        50% { opacity: 0.5; }
+        to { opacity: 1.0; }
+    }
 </style>
 
 </html>
