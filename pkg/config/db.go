@@ -17,6 +17,12 @@ func connect() (*sqlx.DB, error) {
 		return nil, err
 	}
 
+	err = initTables()
+
+	if err != nil {
+		return nil, err
+	}
+
 	return db, nil
 }
 

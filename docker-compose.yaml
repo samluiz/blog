@@ -2,7 +2,9 @@ version: "3.8"
 
 services:
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: scripts/docker/Dockerfile
     ports:
       - "3000:3000"
       - "3001:3000"
