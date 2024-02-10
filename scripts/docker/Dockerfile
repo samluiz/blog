@@ -27,4 +27,6 @@ COPY --from=build /app/static ./static
 COPY --from=build /app/views ./views
 COPY --from=tailwind /app/static/css/tailwind.css ./static/css
 
+EXPOSE 3000
+
 ENTRYPOINT ["./main"]
