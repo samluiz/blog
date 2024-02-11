@@ -1,13 +1,13 @@
 package post
 
 import (
-	"github.com/samluiz/blog/common"
+	"github.com/samluiz/blog/common/pagination"
 	"github.com/samluiz/blog/pkg/types"
 )
 
 type Service interface {
 	FindPostById(id int) (*types.GetPostOutput, error)
-	FindPostsByUserId(userId int, pagination common.Pagination) ([]*types.GetPostOutput, int, error)
+	FindPostsByUserId(userId int, pagination pagination.Pagination) ([]*types.GetPostOutput, int, error)
 	CreatePost(input *types.CreatePostInput) (*types.GetPostOutput, error)
 	UpdatePost(id int, input *types.UpdatePostInput) (*types.GetPostOutput, error)
 	PublishPost(id int, input *types.PublishPostInput) (*types.GetPostOutput, error)
@@ -26,7 +26,7 @@ func (s *service) FindPostById(id int) (*types.GetPostOutput, error) {
 	return s.repo.FindPostById(id)
 }
 
-func (s *service) FindPostsByUserId(userId int, pagination common.Pagination) ([]*types.GetPostOutput, int, error) {
+func (s *service) FindPostsByUserId(userId int, pagination pagination.Pagination) ([]*types.GetPostOutput, int, error) {
 	return s.repo.FindPostsByUserId(userId, pagination)
 }
 

@@ -1,18 +1,18 @@
 package post
 
 import (
-	"math"
 	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/samluiz/blog/common"
+	"github.com/samluiz/blog/common/pagination"
 	"github.com/samluiz/blog/pkg/types"
+	"github.com/samluiz/blog/pkg/user"
 )
 
 type Repository interface {
 	FindPostById(id int) (*types.GetPostOutput, error)
-	FindPostsByUserId(userId int, pagination common.Pagination) ([]*types.GetPostOutput, int, error)
+	FindPostsByUserId(userId int, pagination pagination.Pagination) ([]*types.GetPostOutput, int, error)
 	CreatePost(input *types.CreatePostInput) (*types.GetPostOutput, error)
 	UpdatePost(id int, input *types.UpdatePostInput) (*types.GetPostOutput, error)
 	PublishPost(id int, input *types.PublishPostInput) (*types.GetPostOutput, error)
@@ -31,50 +31,45 @@ func (r *repository) FindPostById(id int) (*types.GetPostOutput, error) {
 	var post types.GetPostOutput
 	err := r.db.Get(&post, "SELECT * FROM posts WHERE id = $1", id)
 	if err != nil {
-		return nil, err
+		return nil, types.ErrPostNotFound
 	}
 	return &post, nil
 }
 
-func (r *repository) FindPostsByUserId(userId int, pagination common.Pagination) ([]*types.GetPostOutput, int, error) {
+func (r *repository) FindPostsByUserId(userId int, pagination pagination.Pagination) ([]*types.GetPostOutput, int, error) {
 
 	// Paginated requests will return the total pages to be sent as a response header in the API
 
-	var posts []*types.GetPostOutput
+	userRepo := user.NewRepository(r.db)
 
-	var offset int
-	var limit int
-
-	if pagination.Page > 0 {
-		offset = (pagination.Page - 1) * pagination.Size
-	} else {
-		offset = 0
-	}
-
-	if pagination.Size > 0 {
-		limit = pagination.Size
-	} else {
-		limit = 10
-	}
-
-	if pagination.OrderBy == "" {
-		pagination.OrderBy = "created_at"
-	}
-	if pagination.SortBy == "" {
-		pagination.SortBy = "DESC"
-	}
-
-	var totalItems int
-
-	err := r.db.Get(&totalItems, "SELECT COUNT(*) FROM posts WHERE author_id = $1", userId)
+	userFound, err := userRepo.UserExistsById(userId)
 
 	if err != nil {
 		return nil, 0, err
 	}
 
-	totalPages := int(math.Round(float64(totalItems) / float64(pagination.Size)))
+	if !userFound {
+		return nil, 0, types.ErrUserNotFound
+	}
 
-	err = r.db.Select(&posts, "SELECT * FROM posts WHERE author_id = $1 ORDER BY $2 $3 LIMIT $4 OFFSET $5", userId, pagination.OrderBy, pagination.SortBy, limit, offset)
+	var posts []*types.GetPostOutput
+
+	var totalItems int
+
+	err = r.db.Get(&totalItems, "SELECT COUNT(*) FROM posts WHERE author_id = $1", userId)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	limit, offset, totalPages, orderBy, sortBy, err := pagination.GetValues(totalItems)
+
+	if err != nil {
+		return nil, totalPages, err
+	}
+
+	err = r.db.Select(&posts, "SELECT * FROM posts WHERE author_id = $1 ORDER BY $2 $3 LIMIT $4 OFFSET $5", userId, orderBy, sortBy, limit, offset)
+
 	if err != nil {
 		return nil, 0, err
 	}
@@ -82,6 +77,19 @@ func (r *repository) FindPostsByUserId(userId int, pagination common.Pagination)
 }
 
 func (r *repository) CreatePost(input *types.CreatePostInput) (*types.GetPostOutput, error) {
+
+	userRepo := user.NewRepository(r.db)
+
+	userFound, err := userRepo.UserExistsById(input.AuthorID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !userFound {
+		return nil, types.ErrUserNotFound
+	}
+
 	var post types.GetPostOutput
 	tagsString := strings.Join(input.Tags, ",")
 

@@ -3,6 +3,7 @@ package comment
 import (
 	"github.com/jmoiron/sqlx"
 	"github.com/samluiz/blog/pkg/types"
+	"github.com/samluiz/blog/pkg/user"
 )
 
 type Repository interface {
@@ -42,8 +43,21 @@ func (r *repository) FindCommentById(id int) (*types.Comment, error) {
 }
 
 func (r *repository) FindCommentsByUserId(userId int) ([]*types.Comment, error) {
+
+	userRepo := user.NewRepository(r.db)
+
+	userFound, err := userRepo.UserExistsById(userId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !userFound {
+		return nil, types.ErrUserNotFound
+	}
+
 	var comments []*types.Comment
-	err := r.db.Select(&comments, "SELECT * FROM comments WHERE author_id = $1", userId)
+	err = r.db.Select(&comments, "SELECT * FROM comments WHERE author_id = $1", userId)
 	if err != nil {
 		return nil, err
 	}
@@ -51,6 +65,19 @@ func (r *repository) FindCommentsByUserId(userId int) ([]*types.Comment, error) 
 }
 
 func (r *repository) CreateComment(input *types.CreateCommentInput) (*types.Comment, error) {
+
+	userRepo := user.NewRepository(r.db)
+
+	userFound, err := userRepo.UserExistsById(input.AuthorID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !userFound {
+		return nil, types.ErrUserNotFound
+	}
+
 	var comment types.Comment
 	res := r.db.MustExec("INSERT INTO comments (author_id, post_id, content) VALUES ($1, $2, $3) RETURNING *", input.AuthorID, input.PostID, input.Content)
 
