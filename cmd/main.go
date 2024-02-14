@@ -3,52 +3,34 @@ package main
 import (
 	"log"
 	"os"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
+	"github.com/samluiz/blog/api/routes"
 )
-
-type PostOutput struct {
-	ID          int
-	Title       string
-	PublishedAt string
-}
 
 func main() {
 
-	Posts := map[string][]PostOutput {
-		"Posts": {
-			{
-				ID:        1,
-				Title:     "How I've built my blog using Go + Astro + Htmx",
-				PublishedAt: time.Now().Format("2006.01.02"),
-			},
-			{
-				ID:        2,
-				Title:     "How i became the first millionare in Piauí",
-				PublishedAt: time.Now().Format("2006.01.02"),
-			},
-			{
-				ID:        3,
-				Title:     "How to build a bazingly fast nutrition API using Java",
-				PublishedAt: time.Now().Format("2006.01.02"),
-			},
-	}}
-
 	engine := html.New("views", ".html")
+	engine.Reload(true)
 
 	app := fiber.New(fiber.Config{
 		Views: engine,
+		ViewsLayout: "layout",
 	})
 
 	app.Static("/static", "static")
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.Render("index", Posts)
-	})
+	router := routes.NewRouter(app)
+
+	app.Get("/home", router.Index)
+	app.Get("/post/:id", router.Post)
 
 	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = "3000"
+	}
 
 	log.Fatal(app.Listen(":" + port))
 }

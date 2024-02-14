@@ -1,0 +1,42 @@
+{{define "title"}}@samluiz | home{{end}}
+
+<main>
+  <div class="grid grid-flow-row">
+    <div class="grid place-items-center mt-8">
+      <img src="/static/assets/logo_black.svg" alt="Logo" >
+      <div x-data="{ 
+        isOpen: false,
+        loaded: true
+        }" x-init="setTimeout(() => { loaded = false; }, 3000)" class="relative">
+        <h1 x-bind:class="{ 'blink': loaded }" @mouseenter="isOpen = true" @mouseleave="isOpen = false" class="text-4xl font-title mt-4 focus:outline-none focus:ring focus:border-blue-300">@samluiz</h1>
+        <ul x-data="{
+          socials: [
+            { name: 'GitHub', link: 'https://github.com/samluiz' },
+            { name: 'Twitter', link: 'https://x.com/samluiz_x' },
+            { name: 'LinkedIn', link: 'https://www.linkedin.com/in/samuelluizrl/' }
+            ]
+          }" x-show="isOpen" @mouseenter="isOpen = true" @mouseleave="isOpen = false" class="absolute mt-1 w-full bg-light">
+          <template x-for="social in socials" :key="social.name">
+            <li class="py-2 px-4 cursor-pointer hover:bg-gray-100 duration-150">
+              <a :href="social.link" target="_blank" class="grid place-items-center grid-flow-col space-x-2">
+                <span x-text="social.name" class="font-body font-semibold antialiased"></span>
+              </a>
+            </li>
+          </template>
+        </ul>
+      </div>
+    </div>
+    <div class="max-w-xl sm:max-w-2xl md:max-w-3xl px-2 mx-auto mt-2 md:mt-4 lg:mt-8">
+      <p class="text-center text-lg sm:text-xl md:text-3xl">Software engineer. Proficiency in Java and Go. Comfortable with React and Astro. Currently at IBM.</p>
+    </div>
+    <div class="max-w-2xl mx-auto w-56 text-center mt-4 md:mt-5">
+      <span class="text-xl">Recent articles</span>
+      {{ range .Posts }}
+        {{template "post-card" .}}
+      {{ end }}
+    </div>
+    <div class="text-center">
+      <a href="/post" class="text-md underline">See all posts</a>
+    </div>
+  </div>
+</main>

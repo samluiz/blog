@@ -1,0 +1,20 @@
+{{define "style"}}
+<style>
+  @import url('https://fonts.cdnfonts.com/css/post-no-bills-colombo');
+  @import url('https://fonts.googleapis.com/css2?family=Scope+One&display=swap');
+
+  body, html {
+    font-family: 'Scope One', sans-serif;
+  }
+
+  .blink {
+        animation: blinker 1s infinite;
+    }
+      
+    @keyframes blinker {
+        from { opacity: 1.0; }
+        50% { opacity: 0.2; }
+        to { opacity: 1.0; }
+    }
+</style>
+{{end}}

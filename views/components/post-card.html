@@ -1,0 +1,8 @@
+{{ define "post-card"}}
+      <div class="grid place-items-start py-2 md:py-4 w-full text-start">
+        <p class="text-sm font-medium text-gray-light">{{ .PublishedAt }}</p>
+        <a href="/post/{{ .ID }}">
+          <h2 class="text-md 2xl:text-lg underline decoration-solid decoration-black decoration-1">{{ .Title }}</h2>
+        </a>
+      </div>
+{{ end }}
