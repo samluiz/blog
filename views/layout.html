@@ -1,0 +1,8 @@
+{{define "layout"}}
+{{ template "head" .}}
+<body class="bg-light">
+  {{ template "header" . }}
+  {{ embed }}
+</body>
+{{template "style" .}}
+{{end}}

@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type User struct {
 	ID        int 			`db:"id"`
@@ -20,3 +23,8 @@ type GetUserOutput struct {
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
 }
+
+var (
+	ErrUserNotFound = errors.New("User not found.")
+	ErrUserUnauthorized = errors.New("User is not authorized.")
+)

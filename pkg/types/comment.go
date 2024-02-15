@@ -1,5 +1,7 @@
 package types
 
+import "errors"
+
 type Comment struct {
 	ID        int    `db:"id"`
 	Content   string `db:"content"`
@@ -18,3 +20,7 @@ type CreateCommentInput struct {
 type UpdateCommentInput struct {
 	Content string `db:"content"`
 }
+
+var (
+	ErrCommentNotFound = errors.New("Comment not found.")
+)

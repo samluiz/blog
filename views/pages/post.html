@@ -1,0 +1,19 @@
+<section class="pt-6">
+  <div class="max-w-md mx-auto mt-6 h-full">
+    <div class="grid place-items-center w-full">
+      <p class="text-lg font-medium text-gray-light">{{ .Post.PublishedAt }}</p>
+        <h2 class="text-4xl text-center lg:text-4xl">{{ .Post.Title }}</h2>
+    </div>
+  </div>
+</section>
+<article>
+  <div>
+    <div class="max-w-2xl mx-auto mt-6 h-full">
+      <div class="grid place-items-center w-full">
+        <div class="prose lg:prose-xl">
+          {{ .Post.Content }}
+        </div>
+      </div>
+    </div>
+  </div>
+</article>

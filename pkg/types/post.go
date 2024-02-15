@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 const (
 	PRIVATE = "PRIVATE"
@@ -11,6 +14,7 @@ type Post struct {
 	ID          int 			`db:"id"`
 	Title       string 		`db:"title"`
 	Slug        string 		`db:"slug"`
+	SlugID 			string 		`db:"slug_id"`
 	Content     string 		`db:"content"`
 	Tags        []string	`db:"tags"`
 	AuthorID    int 			`db:"author_id"`
@@ -25,6 +29,7 @@ type GetPostOutput struct {
 	ID          int 			`db:"id"`
 	Title       string 		`db:"title"`
 	Slug        string 		`db:"slug"`
+	SlugID 			string 		`db:"slug_id"`
 	Content     string 		`db:"content"`
 	Tags        string		`db:"tags"`
 	AuthorID    int 			`db:"author_id"`
@@ -34,7 +39,6 @@ type GetPostOutput struct {
 	CreatedAt   time.Time `db:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at"`
 }
-
 
 type CreatePostInput struct {
 	Title       string 		`db:"title"`
@@ -53,3 +57,7 @@ type UpdatePostInput struct {
 type PublishPostInput struct {
 	IsPublished bool `db:"is_published"`
 }
+
+var (
+	ErrPostNotFound = errors.New("Post not found.")
+)
