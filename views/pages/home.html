@@ -6,7 +6,7 @@
         isOpen: false,
         loaded: true
         }" x-init="setTimeout(() => { loaded = false; }, 3000)" class="relative">
-        <h1 x-bind:class="{ 'blink': loaded }" @mouseenter="isOpen = true" @mouseleave="isOpen = false" class="text-4xl font-title mt-4 focus:outline-none focus:ring focus:border-blue-300">@samluiz</h1>
+        <h1 x-bind:class="{ 'blink': loaded }" @mouseenter="isOpen = true" @mouseleave="isOpen = false" class="text-4xl font-title mt-4 select-none cursor-pointer">@samluiz</h1>
         <ul x-data="{
           socials: [
             { name: 'GitHub', link: 'https://github.com/samluiz' },
