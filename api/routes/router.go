@@ -4,10 +4,11 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/samluiz/blog/common/slug"
 )
 
 type Router interface {
-	Index(c *fiber.Ctx) error
+	Home(c *fiber.Ctx) error
 	Post(c *fiber.Ctx) error
 }
 
@@ -33,7 +34,7 @@ type PostOutput struct {
 	Slug 		 string
 }
 
-func (r *router) Index(c *fiber.Ctx) error {
+func (r *router) Home(c *fiber.Ctx) error {
 
 	Posts := []PostPreview {
 		{
@@ -55,6 +56,7 @@ func (r *router) Index(c *fiber.Ctx) error {
 
 	return c.Render("pages/home", fiber.Map{
 		"Posts": Posts,
+		"PageTitle": "home",
 	})
 }
 
@@ -65,8 +67,11 @@ func (r *router) Post(c *fiber.Ctx) error {
 		Title:       "How I've built my blog using Go + Astro + Htmx",
 		PublishedAt: time.Now().Format("2006.01.02"),
 		Content:     "This is the content of the post",
-		Slug:        "how-ive-built-my-blog-using-go-astro-htmx",
+		Slug:        slug.GenerateSlug("How I've built my blog using Go + Astro + Htmx", slug.GenerateSlugId()),
 	}
 
-	return c.Render("pages/post", Post)
+	return c.Render("pages/post", fiber.Map{
+		"Post": Post,
+		"PageTitle": Post.Slug,
+	})
 }

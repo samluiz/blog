@@ -1,7 +1,10 @@
 package comment
 
 import (
+	"database/sql"
+
 	"github.com/jmoiron/sqlx"
+	"github.com/samluiz/blog/pkg/post"
 	"github.com/samluiz/blog/pkg/types"
 	"github.com/samluiz/blog/pkg/user"
 )
@@ -14,6 +17,7 @@ type Repository interface {
 	UpdateComment(id int, input *types.UpdateCommentInput) (*types.Comment, error)
 	DeleteComment(id int) error
 	DeleteCommentsByPostId(postId int) error
+	CommentExists(id int) error
 }
 
 type repository struct {
@@ -37,6 +41,9 @@ func (r *repository) FindCommentById(id int) (*types.Comment, error) {
 	var comment types.Comment
 	err := r.db.Get(&comment, "SELECT * FROM comments WHERE id = $1", id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, types.ErrCommentNotFound
+		}
 		return nil, err
 	}
 	return &comment, nil
@@ -46,18 +53,12 @@ func (r *repository) FindCommentsByUserId(userId int) ([]*types.Comment, error) 
 
 	userRepo := user.NewRepository(r.db)
 
-	userFound, err := userRepo.UserExistsById(userId)
-
-	if err != nil {
+	if err := userRepo.UserExistsById(userId); err != nil {
 		return nil, err
 	}
 
-	if !userFound {
-		return nil, types.ErrUserNotFound
-	}
-
 	var comments []*types.Comment
-	err = r.db.Select(&comments, "SELECT * FROM comments WHERE author_id = $1", userId)
+	err := r.db.Select(&comments, "SELECT * FROM comments WHERE author_id = $1", userId)
 	if err != nil {
 		return nil, err
 	}
@@ -68,14 +69,8 @@ func (r *repository) CreateComment(input *types.CreateCommentInput) (*types.Comm
 
 	userRepo := user.NewRepository(r.db)
 
-	userFound, err := userRepo.UserExistsById(input.AuthorID)
-
-	if err != nil {
+	if err := userRepo.UserExistsById(input.AuthorID); err != nil {
 		return nil, err
-	}
-
-	if !userFound {
-		return nil, types.ErrUserNotFound
 	}
 
 	var comment types.Comment
@@ -116,6 +111,11 @@ func (r *repository) UpdateComment(id int, input *types.UpdateCommentInput) (*ty
 }
 
 func (r *repository) DeleteComment(id int) error {
+
+	if err := r.CommentExists(id); err != nil {
+		return err
+	}
+
 	_, err := r.db.Exec("DELETE FROM comments WHERE id = $1", id)
 	if err != nil {
 		return err
@@ -124,9 +124,33 @@ func (r *repository) DeleteComment(id int) error {
 }
 
 func (r *repository) DeleteCommentsByPostId(postId int) error {
+	
+	postRepo := post.NewRepository(r.db)
+
+	if err := postRepo.PostExists(postId); err != nil {
+		if err == sql.ErrNoRows {
+			return types.ErrPostNotFound
+		}
+		return err
+	}
+
 	_, err := r.db.Exec("DELETE FROM comments WHERE post_id = $1", postId)
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (r *repository) CommentExists(id int) error {
+	var count int
+	err := r.db.Get(&count, "SELECT COUNT(*) FROM comments WHERE id = $1", id)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return types.ErrCommentNotFound
+		}
+		return err
+	}
+
 	return nil
 }

@@ -1,10 +1,25 @@
-{{define "title"}}@samluiz | {{ .Title }} {{end}}
-
-<section>
-  <div class="max-w-2xl mx-auto w-72 text-center">
-    <div class="grid place-items-start py-2 md:py-4 w-full text-start">
-      <p class="text-2xl font-medium text-gray-light">{{ .PublishedAt }}</p>
-        <h2 class="text-4xl lg:text-4xl">{{ .Title }}</h2>
+<section class="pt-6">
+  <div class="max-w-md mx-auto mt-6 h-full">
+    <div class="grid place-items-center w-full">
+      <p class="text-lg font-medium text-gray-light">{{ .Post.PublishedAt }}</p>
+        <h2 class="text-4xl text-center lg:text-4xl">{{ .Post.Title }}</h2>
     </div>
   </div>
 </section>
+<article>
+  <div>
+    <div class="max-w-2xl mx-auto mt-6 h-full">
+      <div class="grid place-items-center w-full">
+        <div class="prose lg:prose-xl">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Aut numquam eligendi nostrum. Eligendi ipsa hic exercitationem debitis expedita modi alias atque, ex porro impedit culpa maxime commodi ratione numquam! Fugit.
+
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Illum repudiandae praesentium quo, harum nesciunt quod ad blanditiis quidem error iusto minima saepe neque, veniam voluptatibus, iste accusantium animi alias magni.
+
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequuntur repudiandae pariatur laboriosam totam ea perferendis et maxime iure cum cupiditate magnam voluptatibus, commodi reiciendis quia ratione eaque, porro alias minus!
+
+          Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque voluptatum aut veritatis maiores repellat, est dignissimos recusandae porro? Repellat natus expedita distinctio ab consectetur inventore et reiciendis quos autem saepe!
+        </div>
+      </div>
+    </div>
+  </div>
+</article>

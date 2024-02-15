@@ -1,11 +1,13 @@
 package post
 
 import (
+	"database/sql"
 	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/samluiz/blog/common/pagination"
+	"github.com/samluiz/blog/common/slug"
 	"github.com/samluiz/blog/pkg/types"
 	"github.com/samluiz/blog/pkg/user"
 )
@@ -17,6 +19,7 @@ type Repository interface {
 	UpdatePost(id int, input *types.UpdatePostInput) (*types.GetPostOutput, error)
 	PublishPost(id int, input *types.PublishPostInput) (*types.GetPostOutput, error)
 	DeletePost(id int) error
+	PostExists(id int) error
 }
 
 type repository struct {
@@ -42,21 +45,15 @@ func (r *repository) FindPostsByUserId(userId int, pagination pagination.Paginat
 
 	userRepo := user.NewRepository(r.db)
 
-	userFound, err := userRepo.UserExistsById(userId)
-
-	if err != nil {
+	if err := userRepo.UserExistsById(userId); err != nil {
 		return nil, 0, err
-	}
-
-	if !userFound {
-		return nil, 0, types.ErrUserNotFound
 	}
 
 	var posts []*types.GetPostOutput
 
 	var totalItems int
 
-	err = r.db.Get(&totalItems, "SELECT COUNT(*) FROM posts WHERE author_id = $1", userId)
+	err := r.db.Get(&totalItems, "SELECT COUNT(*) FROM posts WHERE author_id = $1", userId)
 
 	if err != nil {
 		return nil, 0, err
@@ -80,14 +77,8 @@ func (r *repository) CreatePost(input *types.CreatePostInput) (*types.GetPostOut
 
 	userRepo := user.NewRepository(r.db)
 
-	userFound, err := userRepo.UserExistsById(input.AuthorID)
-
-	if err != nil {
+	if err := userRepo.UserExistsById(input.AuthorID); err != nil {
 		return nil, err
-	}
-
-	if !userFound {
-		return nil, types.ErrUserNotFound
 	}
 
 	var post types.GetPostOutput
@@ -103,9 +94,10 @@ func (r *repository) CreatePost(input *types.CreatePostInput) (*types.GetPostOut
 		visibility = types.PUBLIC
 	}
 
-	slug := strings.ReplaceAll(input.Title, " ", "-")
+	slug_id := slug.GenerateSlugId()
+	slug := slug.GenerateSlug(input.Title, slug_id)
 
-	res := r.db.MustExec("INSERT INTO posts (title, slug, content, tags, author_id, visibility, is_published, published_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *", input.Title, slug, input.Content, tagsString, input.AuthorID, visibility, isPublishedAtInt, published_at)
+	res := r.db.MustExec("INSERT INTO posts (title, slug, slug_id, content, tags, author_id, visibility, is_published, published_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *", input.Title, slug, slug_id, input.Content, tagsString, input.AuthorID, visibility, isPublishedAtInt, published_at)
 
 	idCreated, err := res.LastInsertId()
 
@@ -123,21 +115,35 @@ func (r *repository) CreatePost(input *types.CreatePostInput) (*types.GetPostOut
 
 func (r *repository) UpdatePost(id int, input *types.UpdatePostInput) (*types.GetPostOutput, error) {
 	var post types.GetPostOutput
-	tagsString := strings.Join(input.Tags, ",")
 
-	_, err := r.db.Exec("UPDATE posts SET title = $1, content = $2, tags = $3, updated_at = $4 WHERE id = $5", input.Title, input.Content, tagsString, time.Now(), id)
+	postToBeUpdated, err := r.FindPostById(id)
+
 	if err != nil {
 		return nil, err
 	}
-	err = r.db.Get(&post, "SELECT * FROM posts WHERE id = $1", id)
+
+	slug := slug.GenerateSlug(input.Title, postToBeUpdated.SlugID)
+
+	tagsString := strings.Join(input.Tags, ",")
+
+	_, err = r.db.Exec("UPDATE posts SET title = $1, slug = $2, content = $3, tags = $4, updated_at = $5 WHERE id = $6", input.Title, slug, input.Content, tagsString, time.Now(), id)
 	if err != nil {
 		return nil, err
+	}
+
+	err = r.db.Get(&post, "SELECT * FROM posts WHERE id = $1", id)
+	if err != nil {
+		return nil, types.ErrPostNotFound
 	}
 	return &post, nil
 }
 
 func (r *repository) PublishPost(id int, input *types.PublishPostInput) (*types.GetPostOutput, error) {
 	var post types.GetPostOutput
+
+	if err := r.PostExists(id); err != nil {
+		return nil, err
+	}
 
 	visibility := types.PUBLIC
 
@@ -149,15 +155,34 @@ func (r *repository) PublishPost(id int, input *types.PublishPostInput) (*types.
 	}
 	err = r.db.Get(&post, "SELECT * FROM posts WHERE id = $1", id)
 	if err != nil {
-		return nil, err
+		return nil, types.ErrPostNotFound
 	}
 	return &post, nil
 }
 
 func (r *repository) DeletePost(id int) error {
+
+	if err := r.PostExists(id); err != nil {
+		return err
+	}
+
 	_, err := r.db.Exec("DELETE FROM posts WHERE id = $1 CASCADE", id)
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (r *repository) PostExists(id int) error {
+	var count int
+	err := r.db.Get(&count, "SELECT COUNT(*) FROM posts WHERE id = $1", id)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return types.ErrPostNotFound
+		}
+		return err
+	}
+
 	return nil
 }

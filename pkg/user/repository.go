@@ -8,7 +8,7 @@ import (
 )
 
 type Repository interface {
-	UserExistsById(id int) (bool, error)
+	UserExistsById(id int) error
 	FindUserById(id int) (*types.GetUserOutput, error)
 	FindUserByUsername(username string) (*types.GetUserOutput, error)
 	FindUsers() ([]*types.GetUserOutput, error)
@@ -22,15 +22,18 @@ func NewRepository(db *sqlx.DB) Repository {
 	return &repository{db}
 }
 
-func (r *repository) UserExistsById(id int) (bool, error) {
+func (r *repository) UserExistsById(id int) error {
 	var count int
 	err := r.db.Get(&count, "SELECT COUNT(*) FROM users WHERE username = $1", id)
 
 	if err != nil {
-		return false, err
+		if err == sql.ErrNoRows {
+			return nil
+		}
+		return err
 	}
 
-	return count > 0, nil
+	return nil
 }
 
 func (r *repository) FindUserById(id int) (*types.GetUserOutput, error) {

@@ -12,7 +12,6 @@ import (
 func main() {
 
 	engine := html.New("views", ".html")
-	engine.Reload(true)
 
 	app := fiber.New(fiber.Config{
 		Views: engine,
@@ -23,7 +22,7 @@ func main() {
 
 	router := routes.NewRouter(app)
 
-	app.Get("/home", router.Index)
+	app.Get("/", router.Home)
 	app.Get("/post/:id", router.Post)
 
 	port := os.Getenv("PORT")
