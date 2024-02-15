@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -m
+
 # Function to perform cleanup
 cleanup() {
     echo "Cleaning up..."
@@ -22,8 +24,8 @@ case "$1" in
     "windows")
         curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-windows-x64.exe
         chmod +x tailwindcss-windows-x64.exe
-        mv tailwindcss-windows-x64.exe tailwindcss
-        %USERPROFILE%\go\bin\air.exe -c .air.windows.conf
+        mv tailwindcss-windows-x64.exe tailwindcss.exe
+        "C:\Program Files\go\bin\air.exe" -c .air.windows.conf
         ;;
     "linux")
         curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-arm64

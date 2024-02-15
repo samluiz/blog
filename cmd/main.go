@@ -23,7 +23,7 @@ func main() {
 	router := routes.NewRouter(app)
 
 	app.Get("/", router.Home)
-	app.Get("/post/:id", router.Post)
+	app.Get("/posts/:slug", router.Post)
 
 	port := os.Getenv("PORT")
 
