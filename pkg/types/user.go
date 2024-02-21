@@ -18,6 +18,7 @@ type User struct {
 type GetUserOutput struct {
 	ID        int 			`db:"id"`
 	Username  string 		`db:"username"`
+	Password 	string 		`db:"password"`
 	IsAdmin   bool 			`db:"is_admin"`
 	Avatar    string 		`db:"avatar"`
 	CreatedAt time.Time `db:"created_at"`
@@ -25,6 +26,6 @@ type GetUserOutput struct {
 }
 
 var (
-	ErrUserNotFound = errors.New("User not found.")
-	ErrUserUnauthorized = errors.New("User is not authorized.")
+	ErrUserNotFound = errors.New("user not found")
+	ErrUserUnauthorized = errors.New("user is not authorized")
 )

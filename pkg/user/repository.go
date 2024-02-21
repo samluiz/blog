@@ -24,7 +24,7 @@ func NewRepository(db *sqlx.DB) Repository {
 
 func (r *repository) UserExistsById(id int) error {
 	var count int
-	err := r.db.Get(&count, "SELECT COUNT(*) FROM users WHERE username = $1", id)
+	err := r.db.Get(&count, "SELECT COUNT(*) FROM users WHERE username = ?", id)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -38,11 +38,12 @@ func (r *repository) UserExistsById(id int) error {
 
 func (r *repository) FindUserById(id int) (*types.GetUserOutput, error) {
 	var user types.GetUserOutput
-	err := r.db.Get(&user, "SELECT id, username, is_admin, avatar, created_at, updated_at FROM users WHERE id = $1", id)
+	err := r.db.Get(&user, "SELECT id, username, password, is_admin, avatar, created_at, updated_at FROM users WHERE id = ?", id)
 
-	if err != sql.ErrNoRows && err != nil {
-		return nil, types.ErrUserNotFound
-	} else if err != nil {
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, types.ErrUserNotFound
+		}
 		return nil, err
 	}
 
@@ -51,11 +52,12 @@ func (r *repository) FindUserById(id int) (*types.GetUserOutput, error) {
 
 func (r *repository) FindUserByUsername(username string) (*types.GetUserOutput, error) {
 	var user types.GetUserOutput
-	err := r.db.Get(&user, "SELECT id, username, is_admin, avatar, created_at, updated_at FROM users WHERE username = $1", username)
+	err := r.db.Get(&user, "SELECT id, username, password, is_admin, avatar, created_at, updated_at FROM users WHERE username = ?", username)
 	
-	if err != sql.ErrNoRows && err != nil {
-		return nil, types.ErrUserNotFound
-	} else if err != nil {
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, types.ErrUserNotFound
+		}
 		return nil, err
 	}
 

@@ -22,5 +22,5 @@ type UpdateCommentInput struct {
 }
 
 var (
-	ErrCommentNotFound = errors.New("Comment not found.")
+	ErrCommentNotFound = errors.New("comment not found")
 )

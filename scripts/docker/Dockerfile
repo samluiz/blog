@@ -20,11 +20,12 @@ RUN npm install -D tailwindcss
 RUN npm install -D @tailwindcss/typography
 RUN npx tailwindcss -i ./static/css/main.css -o ./static/css/tailwind.css
 
-FROM scratch AS run
+FROM centos:latest AS run
 
 WORKDIR /app
 
 COPY --from=build /app/bin ./
+COPY --from=build /app/pkg/config/schema.sql ./schema.sql
 COPY --from=build /app/static ./static
 COPY --from=build /app/views ./views
 COPY --from=tailwind /app/static/css/tailwind.css ./static/css

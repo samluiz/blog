@@ -32,7 +32,7 @@ func NewRepository(db *sqlx.DB) Repository {
 
 func (r *repository) FindPostById(id int) (*types.GetPostOutput, error) {
 	var post types.GetPostOutput
-	err := r.db.Get(&post, "SELECT * FROM posts WHERE id = $1", id)
+	err := r.db.Get(&post, "SELECT * FROM posts WHERE id = ?", id)
 	if err != nil {
 		return nil, types.ErrPostNotFound
 	}
@@ -53,7 +53,7 @@ func (r *repository) FindPostsByUserId(userId int, pagination pagination.Paginat
 
 	var totalItems int
 
-	err := r.db.Get(&totalItems, "SELECT COUNT(*) FROM posts WHERE author_id = $1", userId)
+	err := r.db.Get(&totalItems, "SELECT COUNT(*) FROM posts WHERE author_id = ?", userId)
 
 	if err != nil {
 		return nil, 0, err
@@ -65,7 +65,7 @@ func (r *repository) FindPostsByUserId(userId int, pagination pagination.Paginat
 		return nil, totalPages, err
 	}
 
-	err = r.db.Select(&posts, "SELECT * FROM posts WHERE author_id = $1 ORDER BY $2 $3 LIMIT $4 OFFSET $5", userId, orderBy, sortBy, limit, offset)
+	err = r.db.Select(&posts, "SELECT * FROM posts WHERE author_id = ? ORDER BY ? ? LIMIT ? OFFSET ?", userId, orderBy, sortBy, limit, offset)
 
 	if err != nil {
 		return nil, 0, err
@@ -97,7 +97,7 @@ func (r *repository) CreatePost(input *types.CreatePostInput) (*types.GetPostOut
 	slug_id := slug.GenerateSlugId()
 	slug := slug.GenerateSlug(input.Title, slug_id)
 
-	res := r.db.MustExec("INSERT INTO posts (title, slug, slug_id, content, tags, author_id, visibility, is_published, published_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *", input.Title, slug, slug_id, input.Content, tagsString, input.AuthorID, visibility, isPublishedAtInt, published_at)
+	res := r.db.MustExec("INSERT INTO posts (title, slug, slug_id, content, tags, author_id, visibility, is_published, published_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *", input.Title, slug, slug_id, input.Content, tagsString, input.AuthorID, visibility, isPublishedAtInt, published_at)
 
 	idCreated, err := res.LastInsertId()
 
@@ -105,7 +105,7 @@ func (r *repository) CreatePost(input *types.CreatePostInput) (*types.GetPostOut
 		return nil, err
 	}
 
-	err = r.db.Get(&post, "SELECT * from posts WHERE id = $1", idCreated)
+	err = r.db.Get(&post, "SELECT * from posts WHERE id = ?", idCreated)
 
 	if err != nil {
 		return nil, err
@@ -126,12 +126,12 @@ func (r *repository) UpdatePost(id int, input *types.UpdatePostInput) (*types.Ge
 
 	tagsString := strings.Join(input.Tags, ",")
 
-	_, err = r.db.Exec("UPDATE posts SET title = $1, slug = $2, content = $3, tags = $4, updated_at = $5 WHERE id = $6", input.Title, slug, input.Content, tagsString, time.Now(), id)
+	_, err = r.db.Exec("UPDATE posts SET title = ?, slug = ?, content = ?, tags = ?, updated_at = ? WHERE id = ?", input.Title, slug, input.Content, tagsString, time.Now(), id)
 	if err != nil {
 		return nil, err
 	}
 
-	err = r.db.Get(&post, "SELECT * FROM posts WHERE id = $1", id)
+	err = r.db.Get(&post, "SELECT * FROM posts WHERE id = ?", id)
 	if err != nil {
 		return nil, types.ErrPostNotFound
 	}
@@ -149,11 +149,11 @@ func (r *repository) PublishPost(id int, input *types.PublishPostInput) (*types.
 
 	now := time.Now()
 
-	_, err := r.db.Exec("UPDATE posts SET is_published = $1, published_at = $2, visibility = $3, updated_at = $4 WHERE id = $5", input.IsPublished, now, visibility, now, id)
+	_, err := r.db.Exec("UPDATE posts SET is_published = ?, published_at = ?, visibility = ?, updated_at = ? WHERE id = ?", input.IsPublished, now, visibility, now, id)
 	if err != nil {
 		return nil, err
 	}
-	err = r.db.Get(&post, "SELECT * FROM posts WHERE id = $1", id)
+	err = r.db.Get(&post, "SELECT * FROM posts WHERE id = ?", id)
 	if err != nil {
 		return nil, types.ErrPostNotFound
 	}
@@ -166,7 +166,7 @@ func (r *repository) DeletePost(id int) error {
 		return err
 	}
 
-	_, err := r.db.Exec("DELETE FROM posts WHERE id = $1 CASCADE", id)
+	_, err := r.db.Exec("DELETE FROM posts WHERE id = ? CASCADE", id)
 	if err != nil {
 		return err
 	}
@@ -175,7 +175,7 @@ func (r *repository) DeletePost(id int) error {
 
 func (r *repository) PostExists(id int) error {
 	var count int
-	err := r.db.Get(&count, "SELECT COUNT(*) FROM posts WHERE id = $1", id)
+	err := r.db.Get(&count, "SELECT COUNT(*) FROM posts WHERE id = ?", id)
 
 	if err != nil {
 		if err == sql.ErrNoRows {

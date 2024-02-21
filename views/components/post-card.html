@@ -1,7 +1,7 @@
 {{ define "post-card"}}
       <div class="grid place-items-start py-2 md:py-4 w-full text-start">
         <p class="text-sm font-medium 2xl:text-lg text-gray-light">{{ .PublishedAt }}</p>
-        <a href="/posts/{{ .Slug }}">
+        <a href="/blog/posts/{{ .Slug }}">
           <h2 class="text-lg 2xl:text-2xl overflow-hidden line-clamp-2 text-ellipsis underline decoration-solid decoration-black decoration-1">
             {{with .Title }}
           {{.}}

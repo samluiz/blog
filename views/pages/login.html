@@ -1,0 +1,16 @@
+<section class="h-screen grid place-items-center">
+  <div>
+      <h2 class="text-4xl text-center lg:text-2xl" hx-push-url="/">login</h2>
+        <form action="/auth/login" method="post">
+          <div class="grid place-items-center w-full">
+            <input type="text" name="username" placeholder="username" class="w-full p-2 mt-2 border-[1px] border-gray-300 rounded-md">
+          </div>
+          <div class="grid place-items-center w-full">
+            <input type="password" name="password" placeholder="password" class="w-full p-2 mt-2 border-[1px] border-gray-300 rounded-md">
+          </div>
+          <div class="grid place-items-center w-full">
+            <button type="submit" class="w-full p-2 mt-2 text-dark underline underline-offset-1">submit</button>
+          </div>
+        </form>
+  </div>
+</section>
