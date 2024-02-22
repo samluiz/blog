@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
+	_ "modernc.org/sqlite"
 )
 
 var createTableStatement = `
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS comments (
 
 func NewConnection() (*sqlx.DB, error) {
 
-	db, err := sqlx.Connect("sqlite3", "data.db")
+	db, err := sqlx.Connect("sqlite", "data.db")
 
 	if err != nil {
 		return nil, err
