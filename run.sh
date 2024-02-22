@@ -19,24 +19,35 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
+# load environment variables
+set -a
+source .env
+set +a
+
 # Check which argument was provided
 case "$1" in
     "windows")
         curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-windows-x64.exe
         chmod +x tailwindcss-windows-x64.exe
         mv tailwindcss-windows-x64.exe tailwindcss.exe
+        set GOOS=windows
+        set GOARCH=amd64
         "C:\Program Files\go\bin\air.exe" -c .air.windows.conf
         ;;
     "linux")
         curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-arm64
         chmod +x tailwindcss-linux-arm64
         mv tailwindcss-linux-arm64 tailwindcss
+        export GOOS=linux
+        export GOARCH=arm64
         ~/go/bin/air -c .air.linux.conf
         ;;
     "mac")
         curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-macos-arm64
         chmod +x tailwindcss-macos-arm64
         mv tailwindcss-macos-arm64 tailwindcss
+        export GOOS=darwin
+        export GOARCH=arm64
         ~/go/bin/air -c .air.mac.conf
         ;;
     *)

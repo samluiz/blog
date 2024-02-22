@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/samluiz/blog/api/routes"
 )
 
 func New(config Config) fiber.Handler {
@@ -17,7 +18,7 @@ func New(config Config) fiber.Handler {
 			return c.Redirect("/")
 		}
 
-		isLogged := session.Get("is_logged_in")
+		isLogged := session.Get(routes.IS_LOGGED)
 
 		if isLogged == nil || isLogged == false {
 			log.Default().Printf("user is not logged in. redirecting to login...")

@@ -155,7 +155,7 @@ func (r *router) Authenticate(c *fiber.Ctx) error {
 
 	session.Set("username", username)
 	session.Set("is_admin", user.IsAdmin)
-	session.Set("is_logged_in", true)
+	session.Set(IS_LOGGED, true)
 
 	err = session.Save()
 
