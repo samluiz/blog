@@ -12,17 +12,22 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const IS_LOGGED = "is_logged"
+const DASHBOARD_URL = "/blog/admin/dashboard"
+
 type Router interface {
-	Home(c *fiber.Ctx) error
-	Post(c *fiber.Ctx) error
+	HomePage(c *fiber.Ctx) error
+	PostPage(c *fiber.Ctx) error
 	LoginPage(c *fiber.Ctx) error
+	AdminDashboardPage(c *fiber.Ctx) error
+	AdminPostsPartial(c *fiber.Ctx) error
 	Authenticate(c *fiber.Ctx) error
 	Logout(c *fiber.Ctx) error
 }
 
 type router struct {
-	app *fiber.App
-	store *session.Store
+	app         *fiber.App
+	store       *session.Store
 	userService user.Service
 }
 
@@ -34,8 +39,8 @@ type PostOutput struct {
 	ID          int
 	Title       string
 	PublishedAt string
-	Content 	 string
-	Slug 		 string
+	Content     string
+	Slug        string
 }
 
 var Posts = []PostOutput{
@@ -60,19 +65,19 @@ var Posts = []PostOutput{
 		Title:       "Como eu penso o JPA?",
 		PublishedAt: time.Now().Format("2006.01.02"),
 		Content:     `O JPA é uma especificação que define uma interface comum para frameworks de mapeamento objeto-relacional.`,
-		Slug:	slug.GenerateSlug("My math roadmap: from zero to hero", slug.GenerateSlugId()),
+		Slug:        slug.GenerateSlug("My math roadmap: from zero to hero", slug.GenerateSlugId()),
 	},
 }
 
-func (r *router) Home(c *fiber.Ctx) error {
+func (r *router) HomePage(c *fiber.Ctx) error {
 
 	return c.Render("pages/home", fiber.Map{
-		"Posts": Posts,
+		"Posts":     Posts,
 		"PageTitle": "home",
 	})
 }
 
-func (r *router) Post(c *fiber.Ctx) error {
+func (r *router) PostPage(c *fiber.Ctx) error {
 	var post PostOutput
 
 	for _, p := range Posts {
@@ -83,7 +88,7 @@ func (r *router) Post(c *fiber.Ctx) error {
 	}
 
 	return c.Render("pages/post", fiber.Map{
-		"Post": post,
+		"Post":      post,
 		"PageTitle": post.Slug,
 	})
 }
@@ -97,16 +102,26 @@ func (r *router) LoginPage(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	log.Default().Printf("Session: %v", session.Get("is_logged_in"))
+	isLogged := session.Get(IS_LOGGED)
 
-	if session.Get("is_logged_in") != nil {
+	if isLogged != nil && isLogged == true {
 		log.Default().Println("User is already logged in")
-		return c.Redirect("/admin")
-	}	
+		return c.Redirect(DASHBOARD_URL)
+	}
 
 	return c.Render("pages/login", fiber.Map{
 		"PageTitle": "login",
 	})
+}
+
+func (r *router) AdminDashboardPage(c *fiber.Ctx) error {
+
+	return c.Render("pages/dashboard", nil)
+}
+
+func (r *router) AdminPostsPartial(c *fiber.Ctx) error {
+
+	return c.SendFile("views/partials/posts.html")
 }
 
 func (r *router) Authenticate(c *fiber.Ctx) error {
@@ -120,14 +135,14 @@ func (r *router) Authenticate(c *fiber.Ctx) error {
 		log.Default().Printf("Error finding user: %v", err)
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Unauthorized",
-			"error": err.Error(),
+			"error":   err.Error(),
 		})
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Unauthorized",
-			"error": errors.New("wrong password").Error(),
+			"error":   errors.New("wrong password").Error(),
 		})
 	}
 
@@ -149,7 +164,7 @@ func (r *router) Authenticate(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	return c.Redirect("/admin/posts")
+	return c.Redirect(DASHBOARD_URL)
 }
 
 func (r *router) Logout(c *fiber.Ctx) error {
