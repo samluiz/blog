@@ -1,14 +1,11 @@
 package config
 
 import (
-	"database/sql"
-	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/libsql/go-libsql"
+	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -48,38 +45,20 @@ CREATE TABLE IF NOT EXISTS comments (
 `
 
 func NewConnection() (*sqlx.DB, error) {
-	url := os.Getenv("DATABASE_URL")
-	authToken := os.Getenv("TURSO_AUTH_TOKEN")
-	localDbName := "local.db"
 
-	dir, err := os.MkdirTemp("", "libsql-*")
-	if err != nil {
-		fmt.Println("Error creating temporary directory:", err)
-		os.Exit(1)
-	}
-	defer os.RemoveAll(dir)
-
-	dbPath := filepath.Join(dir, localDbName)
-
-	connector, err := libsql.NewEmbeddedReplicaConnector(dbPath, url, authToken)
-	if err != nil {
-		fmt.Println("Error creating connector:", err)
-		os.Exit(1)
-	}
-	defer connector.Close()
-
-	db := sql.OpenDB(connector)
-	defer db.Close()
-
-	dbWrapper := sqlx.NewDb(db, "libsql")
-
-	err = initTables(dbWrapper)
+	db, err := sqlx.Connect("sqlite3", "data.db")
 
 	if err != nil {
 		return nil, err
 	}
 
-	return dbWrapper, nil
+	err = initTables(db)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
 
 func initUser(db *sqlx.DB) error {
@@ -119,11 +98,6 @@ func initUser(db *sqlx.DB) error {
 
 func initTables(db *sqlx.DB) error {
 	log.Default().Println("Initializing tables...")
-	// schema, err := loadSchema()
-	// if err != nil {
-	// 	log.Default().Printf("Error loading schema: %v", err)
-	// 	return err
-	// }
 
 	_, err := db.Exec(createTableStatement)
 	if err != nil {

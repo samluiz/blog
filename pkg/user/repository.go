@@ -53,7 +53,7 @@ func (r *repository) FindUserById(id int) (*types.GetUserOutput, error) {
 func (r *repository) FindUserByUsername(username string) (*types.GetUserOutput, error) {
 	var user types.GetUserOutput
 	err := r.db.Get(&user, "SELECT id, username, password, is_admin, avatar, created_at, updated_at FROM users WHERE username = ?", username)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, types.ErrUserNotFound

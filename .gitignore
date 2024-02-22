@@ -3,4 +3,6 @@ static/css/tailwind.css
 
 .env
 
+data.db
+
 tailwindcss
