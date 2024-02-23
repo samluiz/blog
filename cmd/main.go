@@ -40,8 +40,11 @@ func main() {
 		ViewsLayout: "layout",
 	})
 
-	// Static files
-	app.Static("/static", "static")
+	app.Static("/static", "static", fiber.Static{
+		CacheDuration: 0,
+		MaxAge:        0,
+		Compress:      true,
+	})
 
 	// Middlewares
 	app.Use(recover.New())
