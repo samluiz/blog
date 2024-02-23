@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -47,8 +48,11 @@ CREATE TABLE IF NOT EXISTS comments (
 
 func NewConnection() (*sqlx.DB, error) {
 	url := os.Getenv("DATABASE_URL")
+	authToken := os.Getenv("TURSO_AUTH_TOKEN")
 
-	db, err := sqlx.Connect("libsql", url)
+	tursoUrl := fmt.Sprintf(url+"?auth_token=%s", authToken)
+
+	db, err := sqlx.Connect("libsql", tursoUrl)
 
 	if err != nil {
 		return nil, err
