@@ -1,0 +1,22 @@
+<section class="pt-6">
+  <div class="max-w-md mx-auto mt-6 h-full">
+    <div class="grid place-items-center w-full">
+        <span class="text-lg font-medium text-gray-light">{{ .Article.PublishedAt }}</span>
+        <h2 class="text-4xl text-center lg:text-4xl">{{ .Article.Title }}</h2>
+        <span class="text-sm font-medium text-gray-light">{{ .Article.ReadingTimeMinutes }} min read</span>       
+    </div>
+  </div>
+</section>
+<article>
+  <div>
+    <div class="max-w-2xl mx-auto mt-6 h-full">
+      <div class="grid place-items-center w-full">
+        <article class="prose lg:prose-lg p-4">
+          
+          {{ .HTML }}
+
+        </article>
+      </div>
+    </div>
+  </div>
+</article>

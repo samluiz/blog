@@ -1,26 +1,32 @@
 package routes
 
 import (
+	"encoding/json"
 	"errors"
+	"html/template"
 	"log"
+	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/samluiz/blog/common/slug"
+	"github.com/samluiz/blog/api/types"
 	"github.com/samluiz/blog/pkg/user"
 	"golang.org/x/crypto/bcrypt"
 )
 
 const IS_LOGGED = "is_logged"
 const DASHBOARD_URL = "/blog/admin/dashboard"
+const DEV_TO_API_BASE_URL = "https://dev.to/api"
+const DEV_TO_USERNAME = "samluiz"
+const DATE_LAYOUT = "2006-01-02T15:04:05.999Z"
 
 type Router interface {
 	HomePage(c *fiber.Ctx) error
-	PostPage(c *fiber.Ctx) error
+	ArticlePage(c *fiber.Ctx) error
 	LoginPage(c *fiber.Ctx) error
 	AdminDashboardPage(c *fiber.Ctx) error
-	AdminPostsPartial(c *fiber.Ctx) error
+	AdminArticlesPartial(c *fiber.Ctx) error
 	Authenticate(c *fiber.Ctx) error
 	Logout(c *fiber.Ctx) error
 }
@@ -35,62 +41,110 @@ func NewRouter(app *fiber.App, store *session.Store, userService user.Service) R
 	return &router{app, store, userService}
 }
 
-type PostOutput struct {
-	ID          int
-	Title       string
-	PublishedAt string
-	Content     string
-	Slug        string
-}
-
-var Posts = []PostOutput{
-	{
-		ID:          1,
-		Title:       "How I've built my blog using Go + Htmx + TailwindCSS",
-		PublishedAt: time.Now().Format("2006.01.02"),
-		Content:     "This is the content of the post",
-		Slug:        slug.GenerateSlug("How I've built my blog using Go + Htmx + TailwindCSS", slug.GenerateSlugId()),
-	},
-
-	{
-		ID:          2,
-		Title:       "How to build an API using Go and Fiber",
-		PublishedAt: time.Now().Format("2006.01.02"),
-		Content:     "This is the content of the post",
-		Slug:        slug.GenerateSlug("How to build an API using Go and Fiber", slug.GenerateSlugId()),
-	},
-
-	{
-		ID:          3,
-		Title:       "Como eu penso o JPA?",
-		PublishedAt: time.Now().Format("2006.01.02"),
-		Content:     `O JPA é uma especificação que define uma interface comum para frameworks de mapeamento objeto-relacional.`,
-		Slug:        slug.GenerateSlug("My math roadmap: from zero to hero", slug.GenerateSlugId()),
-	},
+func preprocessHTML(html string) template.HTML {
+	return template.HTML(html)
 }
 
 func (r *router) HomePage(c *fiber.Ctx) error {
+	articles, err := getArticlesFromDevTo()
+
+	if err != nil {
+		log.Default().Println(err.Error())
+	}
 
 	return c.Render("pages/home", fiber.Map{
-		"Posts":     Posts,
+		"Articles":  articles,
 		"PageTitle": "home",
+		"Error":     err,
 	})
 }
 
-func (r *router) PostPage(c *fiber.Ctx) error {
-	var post PostOutput
+func (r *router) ArticlePage(c *fiber.Ctx) error {
+	slug := c.Params("slug")
 
-	for _, p := range Posts {
-		if p.Slug == c.Params("slug") {
-			post = p
-			break
-		}
+	article, err := getArticleBySlug(slug)
+
+	if err != nil {
+		log.Default().Println(err.Error())
 	}
 
-	return c.Render("pages/post", fiber.Map{
-		"Post":      post,
-		"PageTitle": post.Slug,
+	htmlContent := preprocessHTML(article.BodyHTML)
+
+	return c.Render("pages/article", fiber.Map{
+		"Article":   article,
+		"HTML":      htmlContent,
+		"PageTitle": article.Slug,
+		"Error":     err,
 	})
+}
+
+func getArticleBySlug(slug string) (*types.ArticleResponse, error) {
+	var getArticleResponse types.GetArticleByPathResponse
+	var articleResponse types.ArticleResponse
+
+	log.Default().Println("Getting article from dev.to")
+
+	request := fiber.Get(DEV_TO_API_BASE_URL + "/articles/" + DEV_TO_USERNAME + "/" + slug)
+
+	status, response, err := request.Bytes()
+
+	log.Default().Printf("Status: %v", status)
+
+	if (status != 200) || (err != nil) {
+		log.Default().Printf("Error: %v", err)
+		return nil, errors.New("error getting article from dev.to: " + string(response))
+	}
+
+	jsonErr := json.Unmarshal(response, &getArticleResponse)
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
+
+	getArticleResponse.PublishedAt = formatDate(getArticleResponse.PublishedAt)
+	articleResponse = types.ArticleResponse(getArticleResponse)
+
+	return &articleResponse, nil
+}
+
+func getArticlesFromDevTo() ([]types.ArticleResponse, error) {
+	var articles []types.GetArticleByPathResponse
+	articlesResponse := make([]types.ArticleResponse, len(articles))
+
+	log.Default().Println("Getting articles from dev.to")
+
+	request := fiber.Get(DEV_TO_API_BASE_URL + "/articles/me/published")
+	request.Set("api-key", os.Getenv("DEV_TO_API_KEY"))
+	request.Request().URI().SetQueryString("page=1&per_page=5")
+
+	status, response, err := request.Bytes()
+
+	log.Default().Printf("Status: %v", status)
+	log.Default().Printf("Error: %v", err)
+
+	if (status != 200) || (err != nil) {
+		log.Default().Printf("Error: %v", err)
+		return nil, errors.New("error getting articles from dev.to: " + string(response))
+	}
+
+	jsonErr := json.Unmarshal(response, &articles)
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
+
+	for _, a := range articles {
+		a.PublishedAt = formatDate(a.PublishedAt)
+		articlesResponse = append(articlesResponse, types.ArticleResponse(a))
+	}
+
+	return articlesResponse, nil
+}
+
+func formatDate(date string) string {
+	parsedDate, err := time.Parse(DATE_LAYOUT, date)
+	if err != nil {
+		log.Default().Printf("Error parsing time: %v", err)
+	}
+	return parsedDate.Format("2006.01.02")
 }
 
 func (r *router) LoginPage(c *fiber.Ctx) error {
@@ -119,9 +173,9 @@ func (r *router) AdminDashboardPage(c *fiber.Ctx) error {
 	return c.Render("pages/dashboard", nil)
 }
 
-func (r *router) AdminPostsPartial(c *fiber.Ctx) error {
+func (r *router) AdminArticlesPartial(c *fiber.Ctx) error {
 
-	return c.SendFile("views/partials/posts.html")
+	return c.SendFile("views/partials/articles.html")
 }
 
 func (r *router) Authenticate(c *fiber.Ctx) error {

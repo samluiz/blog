@@ -5,13 +5,13 @@ import (
 )
 
 type Service interface {
-	FindCommentsByPostId(postId int) ([]*types.Comment, error)
+	FindCommentsByArticleId(articleId int) ([]*types.Comment, error)
 	FindCommentById(id int) (*types.Comment, error)
 	FindCommentsByUserId(userId int) ([]*types.Comment, error)
 	CreateComment(input *types.CreateCommentInput) (*types.Comment, error)
 	UpdateComment(id int, input *types.UpdateCommentInput) (*types.Comment, error)
 	DeleteComment(id int) error
-	DeleteCommentsByPostId(postId int) error
+	DeleteCommentsByArticleId(articleId int) error
 }
 
 type service struct {
@@ -26,8 +26,8 @@ func (s *service) FindCommentById(id int) (*types.Comment, error) {
 	return s.repo.FindCommentById(id)
 }
 
-func (s *service) FindCommentsByPostId(postId int) ([]*types.Comment, error) {
-	return s.repo.FindCommentsByPostId(postId)
+func (s *service) FindCommentsByArticleId(articleId int) ([]*types.Comment, error) {
+	return s.repo.FindCommentsByArticleId(articleId)
 }
 
 func (s *service) FindCommentsByUserId(userId int) ([]*types.Comment, error) {
@@ -46,6 +46,6 @@ func (s *service) DeleteComment(id int) error {
 	return s.repo.DeleteComment(id)
 }
 
-func (s *service) DeleteCommentsByPostId(postId int) error {
-	return s.repo.DeleteCommentsByPostId(postId)
+func (s *service) DeleteCommentsByArticleId(articleId int) error {
+	return s.repo.DeleteCommentsByArticleId(articleId)
 }

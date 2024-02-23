@@ -16,11 +16,10 @@ WORKDIR /app
 COPY ./static/css/main.css ./static/css/
 COPY ./tailwind.config.js ./
 COPY ./views ./views
-RUN npm install -D tailwindcss
-RUN npm install -D @tailwindcss/typography
+RUN npm install -D tailwindcss @tailwindcss/typography
 RUN npx tailwindcss -i ./static/css/main.css -o ./static/css/tailwind.css
 
-FROM scratch AS run
+FROM centos:latest AS run
 
 WORKDIR /app
 

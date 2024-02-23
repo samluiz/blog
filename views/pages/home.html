@@ -29,12 +29,12 @@
     </div>
     <div class="max-w-56 2xl:max-w-72 mx-auto text-center 2xl:mb-6 mt-4 md:mt-6 2xl:mt-8">
       <span class="text-xl 2xl:pb-6">Recent articles</span>
-      {{ range .Posts }}
-        {{template "post-card" .}}
+      {{ range .Articles }}
+        {{template "article-card" .}}
       {{ end }}
     </div>
     <div class="text-center">
-      <a href="/blog/posts" class="text-md 2xl:text-lg underline">See all posts</a>
+      <a href="/blog/articles" class="text-md 2xl:text-lg underline">See all articles</a>
     </div>
   </div>
 </main>

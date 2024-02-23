@@ -4,19 +4,19 @@ import (
 	"database/sql"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/samluiz/blog/pkg/post"
+	"github.com/samluiz/blog/pkg/article"
 	"github.com/samluiz/blog/pkg/types"
 	"github.com/samluiz/blog/pkg/user"
 )
 
 type Repository interface {
-	FindCommentsByPostId(postId int) ([]*types.Comment, error)
+	FindCommentsByArticleId(articleId int) ([]*types.Comment, error)
 	FindCommentById(id int) (*types.Comment, error)
 	FindCommentsByUserId(userId int) ([]*types.Comment, error)
 	CreateComment(input *types.CreateCommentInput) (*types.Comment, error)
 	UpdateComment(id int, input *types.UpdateCommentInput) (*types.Comment, error)
 	DeleteComment(id int) error
-	DeleteCommentsByPostId(postId int) error
+	DeleteCommentsByArticleId(articleId int) error
 	CommentExists(id int) error
 }
 
@@ -28,9 +28,9 @@ func NewRepository(db *sqlx.DB) Repository {
 	return &repository{db}
 }
 
-func (r *repository) FindCommentsByPostId(postId int) ([]*types.Comment, error) {
+func (r *repository) FindCommentsByArticleId(articleId int) ([]*types.Comment, error) {
 	var comments []*types.Comment
-	err := r.db.Select(&comments, "SELECT * FROM comments WHERE post_id = ?", postId)
+	err := r.db.Select(&comments, "SELECT * FROM comments WHERE article_id = ?", articleId)
 	if err != nil {
 		return nil, err
 	}
@@ -74,9 +74,9 @@ func (r *repository) CreateComment(input *types.CreateCommentInput) (*types.Comm
 	}
 
 	var comment types.Comment
-	res := r.db.MustExec("INSERT INTO comments (author_id, post_id, content) VALUES (?, ?, ?) RETURNING *", input.AuthorID, input.PostID, input.Content)
+	res := r.db.MustExec("INSERT INTO comments (author_id, article_id, content) VALUES (?, ?, ?) RETURNING *", input.AuthorID, input.ArticleID, input.Content)
 
-	idCreated, err := res.LastInsertId()  
+	idCreated, err := res.LastInsertId()
 
 	if err != nil {
 		return nil, err
@@ -123,18 +123,18 @@ func (r *repository) DeleteComment(id int) error {
 	return nil
 }
 
-func (r *repository) DeleteCommentsByPostId(postId int) error {
-	
-	postRepo := post.NewRepository(r.db)
+func (r *repository) DeleteCommentsByArticleId(articleId int) error {
 
-	if err := postRepo.PostExists(postId); err != nil {
+	articleRepo := article.NewRepository(r.db)
+
+	if err := articleRepo.ArticleExists(articleId); err != nil {
 		if err == sql.ErrNoRows {
-			return types.ErrPostNotFound
+			return types.ErrArticleNotFound
 		}
 		return err
 	}
 
-	_, err := r.db.Exec("DELETE FROM comments WHERE post_id = ?", postId)
+	_, err := r.db.Exec("DELETE FROM comments WHERE article_id = ?", articleId)
 	if err != nil {
 		return err
 	}

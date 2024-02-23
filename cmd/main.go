@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/gofiber/template/html/v2"
 	"github.com/samluiz/blog/api/middlewares/islogged"
@@ -43,6 +44,7 @@ func main() {
 	app.Static("/static", "static")
 
 	// Middlewares
+	app.Use(recover.New())
 
 	// Logger middleware
 	app.Use(logger.New(logger.Config{
@@ -73,7 +75,7 @@ func main() {
 
 	// Blog routes
 	blog.Get("/login", router.LoginPage)
-	blog.Get("/posts/:slug", router.PostPage)
+	blog.Get("/articles/:slug", router.ArticlePage)
 
 	// Server
 	port := os.Getenv("PORT")

@@ -27,12 +27,13 @@ set +a
 # Check which argument was provided
 case "$1" in
     "windows")
-        curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-windows-x64.exe
-        chmod +x tailwindcss-windows-x64.exe
-        mv tailwindcss-windows-x64.exe tailwindcss.exe
-        set GOOS=windows
-        set GOARCH=amd64
-        "C:\Program Files\go\bin\air.exe" -c .air.windows.conf
+        # curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-windows-x64.exe
+        # chmod +x tailwindcss-windows-x64.exe
+        # mv tailwindcss-windows-x64.exe tailwindcss.exe
+        # set GOOS=windows
+        # set GOARCH=amd64
+        # "C:\Program Files\go\bin\air.exe" -c .air.windows.conf
+        docker-compose up --build
         ;;
     "linux")
         curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-arm64
