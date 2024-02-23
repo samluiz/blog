@@ -9,7 +9,8 @@ services:
       - "3000:3000"
       - "3001:3000"
     environment:
-      - DEV_TO_API_KEY=${DEV_TO_API_KEY}
+      - DATABASE_URL=${DATABASE_URL}?authToken=${TURSO_AUTH_TOKEN}
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - DEV_TO_API_KEY=${DEV_TO_API_KEY}
       - PORT=3000

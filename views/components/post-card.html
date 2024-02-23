@@ -1,8 +1,8 @@
 {{ define "article-card"}}
-      <div class="grid place-items-start py-2 md:py-4 w-full text-start">
-        <p class="text-sm font-medium 2xl:text-lg text-gray-light">{{ .PublishedAt }}</p>
+      <div class="grid place-items-start py-2 md:py-4 text-gray-light dark:text-gray-dark w-full text-start">
+        <p class="text-sm font-medium 2xl:text-lg">{{ .PublishedAt }}</p>
         <a href="/blog/articles/{{ .Slug }}">
-          <h2 class="text-lg 2xl:text-2xl overflow-hidden line-clamp-2 text-ellipsis underline decoration-solid decoration-black decoration-1">
+          <h2 class="text-lg 2xl:text-2xl overflow-hidden line-clamp-2 text-black dark:text-light text-ellipsis underline decoration-solid decoration-black dark:decoration-white decoration-1">
             {{with .Title }}
           {{.}}
             {{else}}

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/jmoiron/sqlx"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 	"golang.org/x/crypto/bcrypt"
 	_ "modernc.org/sqlite"
 )
@@ -45,8 +46,9 @@ CREATE TABLE IF NOT EXISTS comments (
 `
 
 func NewConnection() (*sqlx.DB, error) {
+	url := os.Getenv("DATABASE_URL")
 
-	db, err := sqlx.Connect("sqlite", "data.db")
+	db, err := sqlx.Connect("libsql", url)
 
 	if err != nil {
 		return nil, err

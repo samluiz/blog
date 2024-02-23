@@ -1,25 +1,20 @@
 package routes
 
 import (
-	"encoding/json"
 	"errors"
 	"html/template"
 	"log"
-	"os"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/samluiz/blog/api/types"
+	"github.com/samluiz/blog/api/integrations"
+	"github.com/samluiz/blog/api/parsers"
 	"github.com/samluiz/blog/pkg/user"
 	"golang.org/x/crypto/bcrypt"
 )
 
 const IS_LOGGED = "is_logged"
 const DASHBOARD_URL = "/blog/admin/dashboard"
-const DEV_TO_API_BASE_URL = "https://dev.to/api"
-const DEV_TO_USERNAME = "samluiz"
-const DATE_LAYOUT = "2006-01-02T15:04:05.999Z"
 
 type Router interface {
 	HomePage(c *fiber.Ctx) error
@@ -41,12 +36,8 @@ func NewRouter(app *fiber.App, store *session.Store, userService user.Service) R
 	return &router{app, store, userService}
 }
 
-func preprocessHTML(html string) template.HTML {
-	return template.HTML(html)
-}
-
 func (r *router) HomePage(c *fiber.Ctx) error {
-	articles, err := getArticlesFromDevTo()
+	articles, err := integrations.GetArticlesFromDevTo()
 
 	if err != nil {
 		log.Default().Println(err.Error())
@@ -62,89 +53,22 @@ func (r *router) HomePage(c *fiber.Ctx) error {
 func (r *router) ArticlePage(c *fiber.Ctx) error {
 	slug := c.Params("slug")
 
-	article, err := getArticleBySlug(slug)
+	article, err := integrations.GetArticleBySlugDevTo(slug)
 
 	if err != nil {
 		log.Default().Println(err.Error())
 	}
 
-	htmlContent := preprocessHTML(article.BodyHTML)
+	htmlContent := template.HTML(article.BodyHTML)
+	markdownContent := template.HTML(parsers.MarkdownToHTML([]byte(article.BodyMarkdown)))
 
 	return c.Render("pages/article", fiber.Map{
 		"Article":   article,
 		"HTML":      htmlContent,
+		"Markdown":  markdownContent,
 		"PageTitle": article.Slug,
 		"Error":     err,
 	})
-}
-
-func getArticleBySlug(slug string) (*types.ArticleResponse, error) {
-	var getArticleResponse types.GetArticleByPathResponse
-	var articleResponse types.ArticleResponse
-
-	log.Default().Println("Getting article from dev.to")
-
-	request := fiber.Get(DEV_TO_API_BASE_URL + "/articles/" + DEV_TO_USERNAME + "/" + slug)
-
-	status, response, err := request.Bytes()
-
-	log.Default().Printf("Status: %v", status)
-
-	if (status != 200) || (err != nil) {
-		log.Default().Printf("Error: %v", err)
-		return nil, errors.New("error getting article from dev.to: " + string(response))
-	}
-
-	jsonErr := json.Unmarshal(response, &getArticleResponse)
-	if jsonErr != nil {
-		return nil, jsonErr
-	}
-
-	getArticleResponse.PublishedAt = formatDate(getArticleResponse.PublishedAt)
-	articleResponse = types.ArticleResponse(getArticleResponse)
-
-	return &articleResponse, nil
-}
-
-func getArticlesFromDevTo() ([]types.ArticleResponse, error) {
-	var articles []types.GetArticleByPathResponse
-	articlesResponse := make([]types.ArticleResponse, len(articles))
-
-	log.Default().Println("Getting articles from dev.to")
-
-	request := fiber.Get(DEV_TO_API_BASE_URL + "/articles/me/published")
-	request.Set("api-key", os.Getenv("DEV_TO_API_KEY"))
-	request.Request().URI().SetQueryString("page=1&per_page=5")
-
-	status, response, err := request.Bytes()
-
-	log.Default().Printf("Status: %v", status)
-	log.Default().Printf("Error: %v", err)
-
-	if (status != 200) || (err != nil) {
-		log.Default().Printf("Error: %v", err)
-		return nil, errors.New("error getting articles from dev.to: " + string(response))
-	}
-
-	jsonErr := json.Unmarshal(response, &articles)
-	if jsonErr != nil {
-		return nil, jsonErr
-	}
-
-	for _, a := range articles {
-		a.PublishedAt = formatDate(a.PublishedAt)
-		articlesResponse = append(articlesResponse, types.ArticleResponse(a))
-	}
-
-	return articlesResponse, nil
-}
-
-func formatDate(date string) string {
-	parsedDate, err := time.Parse(DATE_LAYOUT, date)
-	if err != nil {
-		log.Default().Printf("Error parsing time: %v", err)
-	}
-	return parsedDate.Format("2006.01.02")
 }
 
 func (r *router) LoginPage(c *fiber.Ctx) error {
