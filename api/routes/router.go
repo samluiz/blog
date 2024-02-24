@@ -44,9 +44,10 @@ func (r *router) HomePage(c *fiber.Ctx) error {
 	}
 
 	return c.Render("pages/home", fiber.Map{
-		"Articles":  articles,
-		"PageTitle": "home",
-		"Error":     err,
+		"Articles":    articles,
+		"PageTitle":   "home",
+		"Description": "My personal portfolio, but also a blog about software development, programming, and technology. Articles about web development, backend, frontend, and whatever i wanna share.",
+		"Error":       err,
 	})
 }
 
@@ -63,11 +64,12 @@ func (r *router) ArticlePage(c *fiber.Ctx) error {
 	markdownContent := template.HTML(parsers.MarkdownToHTML([]byte(article.BodyMarkdown)))
 
 	return c.Render("pages/article", fiber.Map{
-		"Article":   article,
-		"HTML":      htmlContent,
-		"Markdown":  markdownContent,
-		"PageTitle": article.Slug,
-		"Error":     err,
+		"Article":     article,
+		"HTML":        htmlContent,
+		"Markdown":    markdownContent,
+		"PageTitle":   article.Slug,
+		"Description": article.Description,
+		"Error":       err,
 	})
 }
 
