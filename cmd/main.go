@@ -43,7 +43,6 @@ func main() {
 	app.Static("/static", "static", fiber.Static{
 		CacheDuration: 0,
 		MaxAge:        0,
-		Compress:      true,
 	})
 
 	// Middlewares
