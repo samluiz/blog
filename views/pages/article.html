@@ -3,13 +3,13 @@
 <section class="pt-12">
   <div class="px-4 grid place-items-center mt-12 h-full">
     <div class="grid place-items-center w-fit">
-        <h2 class="text-2xl text-center text-black dark:text-light lg:text-4xl">
+        <h2 class="text-sm sm:text-2xl text-center text-black dark:text-light lg:text-4xl">
           <div class="grid place-items-start w-full">
-            <span class="text-lg font-medium text-gray-light dark:text-gray-dark">{{ .Article.PublishedAt }}</span>
+            <span class="text-xs sm:text-sm font-medium text-gray-light dark:text-gray-dark">{{ .Article.PublishedAt }}</span>
           </div>
           {{ .Article.Title }}
           <div class="grid place-items-end w-full">
-            <span class="text-sm font-medium text-gray-light dark:text-gray-dark">{{ .Article.ReadingTimeMinutes }} min read</span>       
+            <span class="text-xs sm:text-sm font-medium text-gray-light dark:text-gray-dark">{{ .Article.ReadingTimeMinutes }} min read</span>       
           </div>
         </h2>
     </div>
@@ -17,13 +17,17 @@
 </section>
 <div class="grid place-items-center p-8">
   <div class="grid place-items-center w-full max-w-lg md:max-w-xl lg:max-w-2xl">
-    <article class="prose-sm sm:prose-base md:prose-lg prose-pre:bg-transparent prose-code:rounded-md 
-    prose-code:bg-slate-300 dark:prose-code:bg-slate-700 dark:prose-code:bg-opacity-50 prose-slate dark:prose-invert 
-    text-black dark:text-light">
-      
-      {{ .Markdown }}
+    <article class="prose prose-sm max-w-none text-black dark:text-light sm:prose-base md:prose-lg prose-pre:bg-transparent prose-code:rounded-md prose-li:list-disc 
+    
+    prose-p:max-w-64 prose-li:max-w-64 prose-pre:max-w-64 prose-headings:max-w-64 prose-code:max-w-64 
 
-    </article>
+    sm:prose-p:max-w-md sm:prose-li:max-w-md sm:prose-pre:max-w-md sm:prose-headings:max-w-md sm:prose-code:max-w-md
+    
+    md:prose-p:max-w-xl md:prose-li:max-w-xl md:prose-pre:max-w-xl md:prose-headings:max-w-xl md:prose-code:max-w-xl
+    
+    lg:prose-p:max-w-2xl lg:prose-li:max-w-2xl lg:prose-pre:max-w-2xl lg:prose-headings:max-w-2xl lg:prose-code:max-w-2xl 
+    
+    dark:prose-code:bg-opacity-50 prose-slate dark:prose-invert">{{ .Markdown }}</article>
   </div>
 </div>
 {{ else }}
