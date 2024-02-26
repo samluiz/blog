@@ -3,6 +3,7 @@ package integrations
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -42,7 +43,7 @@ func GetArticleBySlugDevTo(slug string) (*types.ArticleResponse, error) {
 	return &articleResponse, nil
 }
 
-func GetArticlesFromDevTo() ([]types.ArticleResponse, error) {
+func GetArticlesFromDevTo(page, perPage int) ([]types.ArticleResponse, error) {
 	var articles []types.GetArticleByPathResponse
 	articlesResponse := make([]types.ArticleResponse, len(articles))
 
@@ -50,7 +51,7 @@ func GetArticlesFromDevTo() ([]types.ArticleResponse, error) {
 
 	request := fiber.Get(DEV_TO_API_BASE_URL + "/articles/me/published")
 	request.Set("api-key", os.Getenv("DEV_TO_API_KEY"))
-	request.Request().URI().SetQueryString("page=1&per_page=5")
+	request.Request().URI().SetQueryString(fmt.Sprintf("page=%d&per_page=%d", page, perPage))
 
 	status, response, err := request.Bytes()
 

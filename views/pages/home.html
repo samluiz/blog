@@ -1,10 +1,7 @@
 <main>
   <div class="grid grid-flow-row">
     <div class="grid place-items-center mt-16 2xl:mt-24">
-      <picture>
-        <source srcset="/static/assets/logo_white.svg" media="(prefers-color-scheme: dark)">
-        <img src="/static/assets/logo_black.svg" alt="The website logo, a til accent in vertical">
-      </picture>
+      {{ template "logo" .}}
       <div x-data="{ 
         isOpen: false,
         loaded: true
@@ -12,9 +9,9 @@
         <h1 x-bind:class="{ 'blink': loaded }" @mouseenter="isOpen = true" @mouseleave="isOpen = false" class="text-4xl font-title mt-4 select-none cursor-pointer text-black dark:text-light">@samluiz</h1>
         <ul x-data="{
           socials: [
-            { name: 'GitHub', link: 'https://github.com/samluiz' },
-            { name: 'Twitter', link: 'https://x.com/samluiz_x' },
-            { name: 'LinkedIn', link: 'https://www.linkedin.com/in/samuelluizrl/' }
+            { name: 'github', link: 'https://github.com/samluiz' },
+            { name: 'xwitter', link: 'https://x.com/samluiz_x' },
+            { name: 'linkedin', link: 'https://www.linkedin.com/in/samuelluizrl/' }
             ]
           }" x-show="isOpen" @mouseenter="isOpen = true" @mouseleave="isOpen = false" class="absolute mt-1 w-full bg-light dark:bg-dark">
           <template x-for="social in socials" :key="social.name">
@@ -28,9 +25,9 @@
       </div>
     </div>
     <div class="max-w-xl sm:max-w-2xl md:max-w-3xl px-2 mx-auto mt-2 md:mt-4 lg:mt-8">
-      <p class="text-center text-lg sm:text-xl md:text-3xl text-black dark:text-light">Software engineer. Proficiency in Java and Go. Comfortable with React and Astro. Currently at IBM.</p>
+      <p class="text-center text-lg sm:text-xl md:text-3xl text-black dark:text-light">Software engineer. Proficiency in Java and Go. Comfortable with React and Alpine.js. Currently at IBM.</p>
     </div>
-    <div class="w-screen grid place-items-center mt-4 xl:mt-8 2xl:mt-12">
+    <div class="w-screen grid place-items-center mt-8 2xl:mt-12">
       <span class="text-center w-full text-xl 2xl:pb-6 text-black dark:text-light">Recent articles</span>
     </div>
     <div class="max-w-56 sm:max-w-72 md:max-w-xs xl:max-w-sm mx-auto text-center mb-2 2xl:mb-4">
@@ -49,7 +46,7 @@
         </div>
     </div>
     <div class="text-center">
-      <a href="/blog/articles" class="text-md 2xl:text-lg underline text-black dark:text-light">See all articles</a>
+      <a href="/blog" class="text-md 2xl:text-lg underline underline-offset-2 text-black dark:text-light">See all articles</a>
     </div>
   </div>
 </main>

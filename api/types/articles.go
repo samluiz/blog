@@ -9,7 +9,6 @@ type ArticleResponse struct {
 	PublishedAt        string
 	ReadingTimeMinutes int
 	BodyMarkdown       string
-	BodyHTML           string
 }
 
 type GetArticlesResponse struct {
@@ -32,5 +31,4 @@ type GetArticleByPathResponse struct {
 	PublishedAt        string   `json:"published_at"`
 	ReadingTimeMinutes int      `json:"reading_time_minutes"`
 	BodyMarkdown       string   `json:"body_markdown"`
-	BodyHTML           string   `json:"body_html"`
 }

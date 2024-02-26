@@ -3,12 +3,13 @@ package routes
 import (
 	"errors"
 	"html/template"
-	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/samluiz/blog/api/integrations"
 	"github.com/samluiz/blog/api/parsers"
+	"github.com/samluiz/blog/common/logger"
 	"github.com/samluiz/blog/pkg/user"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,12 +20,15 @@ const DASHBOARD_URL = "/blog/admin/dashboard"
 type Router interface {
 	HomePage(c *fiber.Ctx) error
 	ArticlePage(c *fiber.Ctx) error
+	ArticlesPage(c *fiber.Ctx) error
 	LoginPage(c *fiber.Ctx) error
 	AdminDashboardPage(c *fiber.Ctx) error
 	AdminArticlesPartial(c *fiber.Ctx) error
 	Authenticate(c *fiber.Ctx) error
 	Logout(c *fiber.Ctx) error
 }
+
+var LOGGER = logger.New(os.Stdout, logger.ErrorLevel, "[ROUTER]")
 
 type router struct {
 	app         *fiber.App
@@ -37,10 +41,10 @@ func NewRouter(app *fiber.App, store *session.Store, userService user.Service) R
 }
 
 func (r *router) HomePage(c *fiber.Ctx) error {
-	articles, err := integrations.GetArticlesFromDevTo()
+	articles, err := integrations.GetArticlesFromDevTo(1, 3)
 
 	if err != nil {
-		log.Default().Println(err.Error())
+		LOGGER.Error(err.Error())
 	}
 
 	return c.Render("pages/home", fiber.Map{
@@ -57,18 +61,31 @@ func (r *router) ArticlePage(c *fiber.Ctx) error {
 	article, err := integrations.GetArticleBySlugDevTo(slug)
 
 	if err != nil {
-		log.Default().Println(err.Error())
+		LOGGER.Error(err.Error())
 	}
 
-	htmlContent := template.HTML(article.BodyHTML)
 	markdownContent := template.HTML(parsers.MarkdownToHTML([]byte(article.BodyMarkdown)))
 
 	return c.Render("pages/article", fiber.Map{
 		"Article":     article,
-		"HTML":        htmlContent,
 		"Markdown":    markdownContent,
 		"PageTitle":   article.Slug,
 		"Description": article.Description,
+		"Error":       err,
+	})
+}
+
+func (r *router) ArticlesPage(c *fiber.Ctx) error {
+	articles, err := integrations.GetArticlesFromDevTo(1, 10)
+
+	if err != nil {
+		LOGGER.Error(err.Error())
+	}
+
+	return c.Render("pages/articles", fiber.Map{
+		"Articles":    articles,
+		"PageTitle":   "articles",
+		"Description": "Articles about web development, backend, frontend, and whatever i wanna share.",
 		"Error":       err,
 	})
 }
@@ -78,14 +95,14 @@ func (r *router) LoginPage(c *fiber.Ctx) error {
 	session, err := r.store.Get(c)
 
 	if err != nil {
-		log.Default().Printf("Error getting session: %v", err)
+		LOGGER.Error("error getting session: %v", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
 	isLogged := session.Get(IS_LOGGED)
 
 	if isLogged != nil && isLogged == true {
-		log.Default().Println("User is already logged in")
+		LOGGER.Info("user is already logged in. redirecting to dashboard.")
 		return c.Redirect(DASHBOARD_URL)
 	}
 
@@ -112,7 +129,7 @@ func (r *router) Authenticate(c *fiber.Ctx) error {
 
 	// TODO: pass this errors to the htmx view
 	if err != nil {
-		log.Default().Printf("Error finding user: %v", err)
+		LOGGER.Error(err.Error())
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Unauthorized",
 			"error":   err.Error(),
@@ -129,7 +146,7 @@ func (r *router) Authenticate(c *fiber.Ctx) error {
 	session, err := r.store.Get(c)
 
 	if err != nil {
-		log.Default().Printf("Error getting session: %v", err)
+		LOGGER.Error("error getting session: %v", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -140,7 +157,7 @@ func (r *router) Authenticate(c *fiber.Ctx) error {
 	err = session.Save()
 
 	if err != nil {
-		log.Default().Printf("Error saving session: %v", err)
+		LOGGER.Error("error saving session: %v", err)
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
@@ -151,7 +168,7 @@ func (r *router) Logout(c *fiber.Ctx) error {
 	session, err := r.store.Get(c)
 
 	if err != nil {
-		log.Default().Printf("Error getting session: %v", err)
+		LOGGER.Error("error saving session: %v", err)
 		return c.Redirect("/")
 	}
 

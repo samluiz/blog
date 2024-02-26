@@ -1,16 +1,18 @@
 <section class="h-screen grid place-items-center">
-  <div>
-      <h2 class="text-4xl text-center lg:text-2xl text-black dark:text-light">login</h2>
-        <form action="/blog/auth/login" method="POST">
-          <div class="grid place-items-center w-full">
-            <input type="text" name="username" placeholder="username" class="w-full p-2 mt-2 border-[1px] border-gray-300 rounded-md">
-          </div>
-          <div class="grid place-items-center w-full">
-            <input type="password" name="password" placeholder="password" class="w-full p-2 mt-2 border-[1px] border-gray-300 rounded-md">
-          </div>
-          <div class="grid place-items-center w-full">
-            <button type="submit" class="w-full p-2 mt-2 text-black dark:text-light underline underline-offset-1">submit</button>
-          </div>
+  <div class="grid place-items-center">
+        <form class="flex justify-items-center items-center px-1 flex-col sm:flex-row sm:items-start gap-12" action="/blog/auth/login" method="POST">
+          {{ template "logo" .}}
+            <div>
+              <div class="grid place-items-center w-full">
+                <input type="text" required name="username" placeholder="username" class="w-full p-2 mt-2 rounded-md focus:outline-none focus:ring-0 focus:border-[1px] focus:border-solid focus:border-gray-700">
+              </div>
+              <div class="grid place-items-center w-full">
+                <input type="password" required name="password" placeholder="password" class="w-full p-2 mt-2 rounded-md focus:outline-none focus:ring-0 focus:border-[1px] focus:border-solid focus:border-gray-700">
+              </div>              
+              <div class="grid place-items-center w-full">
+                <button type="submit" class="w-full p-2 mt-2 text-black dark:text-light">login</button>
+              </div>
+            </div>
         </form>
   </div>
 </section>

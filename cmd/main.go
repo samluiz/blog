@@ -78,6 +78,7 @@ func main() {
 	// Blog routes
 	blog.Get("/login", router.LoginPage)
 	blog.Get("/articles/:slug", router.ArticlePage)
+	blog.Get("", router.ArticlesPage)
 
 	// Server
 	port := os.Getenv("PORT")
