@@ -22,7 +22,7 @@ func New(config Config) fiber.Handler {
 
 		if isLogged == nil || isLogged == false {
 			log.Default().Printf("user is not logged in. redirecting to login...")
-			return c.Redirect("/blog/login")
+			return c.Redirect("/auth/login?redirect=" + c.Path())
 		}
 
 		log.Default().Println("user is logged in")

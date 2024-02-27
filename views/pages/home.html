@@ -15,7 +15,7 @@
             ]
           }" x-show="isOpen" @mouseenter="isOpen = true" @mouseleave="isOpen = false" class="absolute mt-1 w-full bg-light dark:bg-dark">
           <template x-for="social in socials" :key="social.name">
-            <li class="py-2 px-4 cursor-pointer light:hover:bg-gray-100 dark:hover:bg-gray-800 duration-150">
+            <li class="py-2 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 duration-150">
               <a :href="social.link" target="_blank" class="grid place-items-center grid-flow-col space-x-2">
                 <span x-text="social.name" class="font-body font-semibold antialiased text-black dark:text-light"></span>
               </a>
@@ -46,7 +46,7 @@
         </div>
     </div>
     <div class="text-center">
-      <a href="/blog" class="text-md 2xl:text-lg underline underline-offset-2 text-black dark:text-light">See all articles</a>
+      <a href="/articles" class="text-md 2xl:text-lg underline underline-offset-2 text-black dark:text-light">See all articles</a>
     </div>
   </div>
 </main>

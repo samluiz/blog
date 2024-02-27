@@ -10,12 +10,15 @@ import (
 	"github.com/samluiz/blog/api/integrations"
 	"github.com/samluiz/blog/api/parsers"
 	"github.com/samluiz/blog/common/logger"
+	"github.com/samluiz/blog/pkg/types"
 	"github.com/samluiz/blog/pkg/user"
 	"golang.org/x/crypto/bcrypt"
 )
 
 const IS_LOGGED = "is_logged"
-const DASHBOARD_URL = "/blog/admin/dashboard"
+const DASHBOARD_URL = "/dashboard"
+
+var LOGGER = logger.New(os.Stdout, logger.DebugLevel, "[ROUTER]")
 
 type Router interface {
 	HomePage(c *fiber.Ctx) error
@@ -26,9 +29,9 @@ type Router interface {
 	AdminArticlesPartial(c *fiber.Ctx) error
 	Authenticate(c *fiber.Ctx) error
 	Logout(c *fiber.Ctx) error
+	NotFoundPage(c *fiber.Ctx) error
+	ErrorPage(c *fiber.Ctx) error
 }
-
-var LOGGER = logger.New(os.Stdout, logger.ErrorLevel, "[ROUTER]")
 
 type router struct {
 	app         *fiber.App
@@ -92,6 +95,12 @@ func (r *router) ArticlesPage(c *fiber.Ctx) error {
 
 func (r *router) LoginPage(c *fiber.Ctx) error {
 
+	redirect := c.Query("redirect")
+
+	if redirect == "" || redirect == "/auth/login" {
+		redirect = "/"
+	}
+
 	session, err := r.store.Get(c)
 
 	if err != nil {
@@ -108,6 +117,7 @@ func (r *router) LoginPage(c *fiber.Ctx) error {
 
 	return c.Render("pages/login", fiber.Map{
 		"PageTitle": "login",
+		"Redirect":  redirect,
 	})
 }
 
@@ -125,29 +135,29 @@ func (r *router) Authenticate(c *fiber.Ctx) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
 
+	const WRONG_CREDENTIALS = "Wrong credentials. Please try again."
+	const UNKNOWN_ERROR = "Something went wrong. Please try again."
+
 	user, err := r.userService.FindUserByUsername(username)
 
-	// TODO: pass this errors to the htmx view
 	if err != nil {
 		LOGGER.Error(err.Error())
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"message": "Unauthorized",
-			"error":   err.Error(),
-		})
+		if errors.Is(err, types.ErrUserNotFound) {
+			LOGGER.Debug("user: %s not found", username)
+			return c.SendString(WRONG_CREDENTIALS)
+		}
+		return c.SendString(UNKNOWN_ERROR)
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"message": "Unauthorized",
-			"error":   errors.New("wrong password").Error(),
-		})
+		return c.SendString(WRONG_CREDENTIALS)
 	}
 
 	session, err := r.store.Get(c)
 
 	if err != nil {
 		LOGGER.Error("error getting session: %v", err)
-		return c.SendStatus(fiber.StatusInternalServerError)
+		return c.SendString(UNKNOWN_ERROR)
 	}
 
 	session.Set("username", username)
@@ -158,10 +168,13 @@ func (r *router) Authenticate(c *fiber.Ctx) error {
 
 	if err != nil {
 		LOGGER.Error("error saving session: %v", err)
-		return c.SendStatus(fiber.StatusInternalServerError)
+		return c.SendString(UNKNOWN_ERROR)
 	}
 
-	return c.Redirect(DASHBOARD_URL)
+	res := c.Response()
+	res.Header.Add("HX-Redirect", c.Get("X-Redirect"))
+
+	return c.SendStatus(fiber.StatusOK)
 }
 
 func (r *router) Logout(c *fiber.Ctx) error {
@@ -175,4 +188,19 @@ func (r *router) Logout(c *fiber.Ctx) error {
 	session.Destroy()
 
 	return c.Redirect("/")
+}
+
+func (r *router) NotFoundPage(c *fiber.Ctx) error {
+	return c.Render("pages/not-found", fiber.Map{
+		"PageTitle": "404",
+	})
+}
+
+func (r *router) ErrorPage(c *fiber.Ctx) error {
+	httpStatus := c.Params("status")
+
+	return c.Render("pages/error", fiber.Map{
+		"PageTitle":  "error",
+		"HttpStatus": httpStatus,
+	})
 }

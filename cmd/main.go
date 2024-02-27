@@ -3,12 +3,14 @@ package main
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/gofiber/template/html/v2"
+	"github.com/samluiz/blog/api/middlewares/isinternal"
 	"github.com/samluiz/blog/api/middlewares/islogged"
 	"github.com/samluiz/blog/api/routes"
 	"github.com/samluiz/blog/pkg/config"
@@ -34,18 +36,34 @@ func main() {
 	// Html template
 	engine := html.New("views", ".html")
 
-	// App
-	app := fiber.New(fiber.Config{
+	// Fiber config
+	config := fiber.Config{
 		Views:       engine,
 		ViewsLayout: "layout",
-	})
+		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			code := fiber.StatusInternalServerError
+
+			if e, ok := err.(*fiber.Error); ok {
+				code = e.Code
+			}
+
+			if code == fiber.StatusNotFound {
+				return c.Redirect("/error/404")
+			}
+
+			return c.Redirect("/error?status=" + strconv.Itoa(code))
+		},
+	}
+
+	// App
+	app := fiber.New(config)
 
 	app.Static("/static", "static", fiber.Static{
 		CacheDuration: 0,
 		MaxAge:        0,
 	})
 
-	// Middlewares
+	// Recover middleware
 	app.Use(recover.New())
 
 	// Logger middleware
@@ -53,15 +71,23 @@ func main() {
 		Format: "${pid} ${locals:requestid} ${status} - ${method} ${path}\n",
 	}))
 
-	// Route groups
-	blog := app.Group("/blog")
-	admin := blog.Group("/admin")
-	auth := blog.Group("/auth")
-
 	// Middleware that checks if user is logged in by session
-	admin.Use(islogged.New(islogged.Config{
+	islogged := islogged.New(islogged.Config{
 		Session: store,
-	}))
+	})
+
+	isinternal := isinternal.New()
+
+	// Internal routes
+	internal := app.Group("/internal")
+	internal.Use(isinternal)
+
+	// Protected routes
+	protected := app.Group("/dashboard")
+	protected.Use(islogged)
+
+	// Error routes
+	errors := app.Group("/error")
 
 	// Router
 	router := routes.NewRouter(app, store, userService)
@@ -69,16 +95,20 @@ func main() {
 	// App root routes
 	app.Get("/", router.HomePage)
 
-	// admin routes
-	admin.Get("/dashboard", router.AdminDashboardPage)
+	// Blog routes
+	app.Get("/auth/login", router.LoginPage)
+	app.Get("/articles/:slug", router.ArticlePage)
+	app.Get("/articles", router.ArticlesPage)
+
+	// Error routes
+	errors.Get("/", router.ErrorPage)
+	errors.Get("/404", router.NotFoundPage)
+
+	// Protected routes
+	protected.Get("/", router.AdminDashboardPage)
 
 	// Auth routes
-	auth.Post("/login", router.Authenticate)
-
-	// Blog routes
-	blog.Get("/login", router.LoginPage)
-	blog.Get("/articles/:slug", router.ArticlePage)
-	blog.Get("", router.ArticlesPage)
+	internal.Post("/auth/login", router.Authenticate)
 
 	// Server
 	port := os.Getenv("PORT")

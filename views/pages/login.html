@@ -1,18 +1,19 @@
 <section class="h-screen grid place-items-center">
   <div class="grid place-items-center">
-        <form class="flex justify-items-center items-center px-1 flex-col sm:flex-row sm:items-start gap-12" action="/blog/auth/login" method="POST">
+        <form hx-post="/internal/auth/login" hx-headers='{"X-Redirect":"{{ .Redirect }}"}' hx-swap="innerHTML" hx-target="#error" class="flex justify-items-center items-center px-1 flex-col sm:flex-row sm:items-start gap-12">
           {{ template "logo" .}}
             <div>
               <div class="grid place-items-center w-full">
-                <input type="text" required name="username" placeholder="username" class="w-full p-2 mt-2 rounded-md focus:outline-none focus:ring-0 focus:border-[1px] focus:border-solid focus:border-gray-700">
+                <input type="text" required name="username" placeholder="username" class="w-full p-2 mt-2 rounded-sm focus:outline-none focus:ring-0 focus:border-[1px] focus:border-solid focus:border-gray-700 bg-gray-dark dark:bg-gray-light dark:placeholder-light">
               </div>
               <div class="grid place-items-center w-full">
-                <input type="password" required name="password" placeholder="password" class="w-full p-2 mt-2 rounded-md focus:outline-none focus:ring-0 focus:border-[1px] focus:border-solid focus:border-gray-700">
+                <input type="password" required name="password" placeholder="password" class="w-full p-2 mt-2 rounded-sm focus:outline-none focus:ring-0 focus:border-[1px] focus:border-solid focus:border-gray-700 bg-gray-dark dark:bg-gray-light dark:placeholder-light">
               </div>              
               <div class="grid place-items-center w-full">
-                <button type="submit" class="w-full p-2 mt-2 text-black dark:text-light">login</button>
+                <button type="submit" class="w-full p-2 mt-2 text-black rounded-sm dark:text-light border-[1px]">login</button>
               </div>
+              <p id="error" class="text-center text-xs mt-1 text-red-500"></p>
             </div>
-        </form>
+          </form>
   </div>
 </section>

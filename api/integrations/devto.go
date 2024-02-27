@@ -19,7 +19,7 @@ func GetArticleBySlugDevTo(slug string) (*types.ArticleResponse, error) {
 	var getArticleResponse types.GetArticleByPathResponse
 	var articleResponse types.ArticleResponse
 
-	log.Default().Println("Getting article from dev.to")
+	log.Default().Println("getting article from dev.to")
 
 	request := fiber.Get(DEV_TO_API_BASE_URL + "/articles/" + DEV_TO_USERNAME + "/" + slug)
 
@@ -28,7 +28,6 @@ func GetArticleBySlugDevTo(slug string) (*types.ArticleResponse, error) {
 	log.Default().Printf("Status: %v", status)
 
 	if (status != 200) || (err != nil) {
-		log.Default().Printf("Error: %v", err)
 		return nil, errors.New("error getting article from dev.to: " + string(response))
 	}
 
@@ -47,7 +46,7 @@ func GetArticlesFromDevTo(page, perPage int) ([]types.ArticleResponse, error) {
 	var articles []types.GetArticleByPathResponse
 	articlesResponse := make([]types.ArticleResponse, len(articles))
 
-	log.Default().Println("Getting articles from dev.to")
+	log.Default().Println("getting articles from dev.to")
 
 	request := fiber.Get(DEV_TO_API_BASE_URL + "/articles/me/published")
 	request.Set("api-key", os.Getenv("DEV_TO_API_KEY"))
@@ -58,7 +57,6 @@ func GetArticlesFromDevTo(page, perPage int) ([]types.ArticleResponse, error) {
 	log.Default().Printf("Status: %v", status)
 
 	if (status != 200) || (err != nil) {
-		log.Default().Printf("Error: %v", err)
 		return nil, errors.New("error getting articles from dev.to: " + string(response))
 	}
 
