@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+    .clip-circle {
+        max-width: 2.5rem;
+        max-height: 2.5rem;
+        object-fit: contain;
+        clip-path: circle(1rem at center);
+    }
+}

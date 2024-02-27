@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/samluiz/blog/api/integrations"
 	"github.com/samluiz/blog/api/parsers"
+	apiTypes "github.com/samluiz/blog/api/types"
 	"github.com/samluiz/blog/common/logger"
 	"github.com/samluiz/blog/pkg/types"
 	"github.com/samluiz/blog/pkg/user"
@@ -51,8 +52,19 @@ func (r *router) HomePage(c *fiber.Ctx) error {
 		LOGGER.Error(err.Error())
 	}
 
+	session, err := r.store.Get(c)
+
+	if err != nil {
+		LOGGER.Error("error getting session: %v", err)
+	}
+
+	isLogged := session.Get(IS_LOGGED)
+	user := session.Get("user")
+
 	return c.Render("pages/home", fiber.Map{
 		"Articles":    articles,
+		"IsLogged":    isLogged,
+		"User":        user,
 		"PageTitle":   "home",
 		"Description": "My personal portfolio, but also a blog about software development, programming, and technology. Articles about web development, backend, frontend, and whatever i wanna share.",
 		"Error":       err,
@@ -70,8 +82,19 @@ func (r *router) ArticlePage(c *fiber.Ctx) error {
 
 	markdownContent := template.HTML(parsers.MarkdownToHTML([]byte(article.BodyMarkdown)))
 
+	session, err := r.store.Get(c)
+
+	if err != nil {
+		LOGGER.Error("error getting session: %v", err)
+	}
+
+	isLogged := session.Get(IS_LOGGED)
+	user := session.Get("user")
+
 	return c.Render("pages/article", fiber.Map{
 		"Article":     article,
+		"IsLogged":    isLogged,
+		"User":        user,
 		"Markdown":    markdownContent,
 		"PageTitle":   article.Slug,
 		"Description": article.Description,
@@ -86,8 +109,19 @@ func (r *router) ArticlesPage(c *fiber.Ctx) error {
 		LOGGER.Error(err.Error())
 	}
 
+	session, err := r.store.Get(c)
+
+	if err != nil {
+		LOGGER.Error("error getting session: %v", err)
+	}
+
+	isLogged := session.Get(IS_LOGGED)
+	user := session.Get("user")
+
 	return c.Render("pages/articles", fiber.Map{
 		"Articles":    articles,
+		"IsLogged":    isLogged,
+		"User":        user,
 		"PageTitle":   "articles",
 		"Description": "Articles about web development, backend, frontend, and whatever i wanna share.",
 		"Error":       err,
@@ -126,8 +160,19 @@ func (r *router) LoginPage(c *fiber.Ctx) error {
 }
 
 func (r *router) AdminDashboardPage(c *fiber.Ctx) error {
+	session, err := r.store.Get(c)
 
-	return c.Render("pages/dashboard", nil)
+	if err != nil {
+		LOGGER.Error("error getting session: %v", err)
+	}
+
+	isLogged := session.Get(IS_LOGGED)
+	user := session.Get("user")
+
+	return c.Render("pages/dashboard", fiber.Map{
+		"IsLogged": isLogged,
+		"User":     user,
+	})
 }
 
 func (r *router) AdminArticlesPartial(c *fiber.Ctx) error {
@@ -164,8 +209,13 @@ func (r *router) Authenticate(c *fiber.Ctx) error {
 		return c.SendString(UNKNOWN_ERROR)
 	}
 
-	session.Set("username", username)
-	session.Set("is_admin", user.IsAdmin)
+	sessionUser := apiTypes.SessionUser{
+		ID:       user.ID,
+		Username: username,
+		IsAdmin:  user.IsAdmin,
+		Avatar:   user.Avatar,
+	}
+	session.Set("user", sessionUser)
 	session.Set(IS_LOGGED, true)
 
 	err = session.Save()
@@ -185,7 +235,7 @@ func (r *router) Logout(c *fiber.Ctx) error {
 	session, err := r.store.Get(c)
 
 	if err != nil {
-		LOGGER.Error("error saving session: %v", err)
+		LOGGER.Error("error retrieving session: %v", err)
 		return c.Redirect("/")
 	}
 
@@ -244,11 +294,16 @@ func (r *router) GithubCallback(c *fiber.Ctx) error {
 		}
 	}
 
-	session.Set(IS_LOGGED, true)
+	sessionUser := apiTypes.SessionUser{
+		ID:       user.ID,
+		Username: user.Username,
+		IsAdmin:  false,
+		Provider: user.Provider,
+		Avatar:   user.Avatar,
+	}
+	session.Set("user", sessionUser)
 	session.Set("github_token", githubResponse.AccessToken)
-	session.Set("username", user.Username)
-	session.Set("provider", user.Provider)
-	session.Set("is_admin", false)
+	session.Set(IS_LOGGED, true)
 
 	err = session.Save()
 

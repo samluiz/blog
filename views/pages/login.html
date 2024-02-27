@@ -1,23 +1,24 @@
+{{ template "header" . }}
 <section class="h-screen grid place-items-center">
   <div class="grid place-items-center">
         <form hx-post="/internal/auth/login" hx-headers='{"X-Redirect":"{{ .Redirect }}"}' hx-swap="innerHTML" hx-target="#error" class="flex justify-items-center items-center px-1 flex-col sm:flex-row gap-12">
           {{ template "logo" .}}
             <div>
               <div class="grid place-items-center w-full">
-                <input type="text" required name="username" placeholder="username" class="w-full p-2 mt-2 rounded-sm focus:outline-none focus:ring-0 focus:border-[1px] focus:border-solid focus:border-gray-700 bg-gray-dark dark:bg-gray-light dark:placeholder-light">
+                <input type="text" required name="username" placeholder="username" class="w-full p-2 mt-2 rounded-sm focus:outline-none focus:ring-0 focus:border-[1px] focus:border-solid focus:border-gray-700 bg-gray-dark dark:bg-gray-light placeholder-dark dark:placeholder-light">
               </div>
               <div class="grid place-items-center w-full">
-                <input type="password" required name="password" placeholder="password" class="w-full p-2 mt-2 rounded-sm focus:outline-none focus:ring-0 focus:border-[1px] focus:border-solid focus:border-gray-700 bg-gray-dark dark:bg-gray-light dark:placeholder-light">
+                <input type="password" required name="password" placeholder="password" class="w-full p-2 mt-2 rounded-sm focus:outline-none focus:ring-0 focus:border-[1px] focus:border-solid focus:border-gray-700 bg-gray-dark dark:bg-gray-light placeholder-dark dark:placeholder-light">
               </div>    
               <div class="grid place-items-center w-full">
                 <div class="grid place-items-center gap-y-0.5 mt-2 w-full">
-                  <button type="submit" class="w-full p-2 text-black rounded-sm dark:text-light border-[1px]">login</button>
+                  <button type="submit" class="w-full p-2 border-gray-light dark:border-gray-dark text-black rounded-sm dark:text-light border-[1px]">login</button>
                   <div class="relative flex py-0.5 items-center w-full">
                     <div class="flex-grow border-t border-[1px] border-gray-light dark:border-gray-dark"></div>
                     <span class="flex-shrink mx-4 text-gray-light dark:text-gray-dark">or login with</span>
                     <div class="flex-grow border-t border-[1px] border-gray-light dark:border-gray-dark"></div>
                    </div>                
-                  <a href="{{ .GithubURL }}" class="w-full p-2 text-center text-black rounded-sm dark:text-light border-[1px]">github</a>
+                  <a href="{{ .GithubURL }}" class="w-full p-2 text-center border-gray-light dark:border-gray-dark text-black rounded-sm dark:text-light border-[1px]">github</a>
                 </div>
               </div>
               <p id="error" class="text-center text-xs mt-1 text-red-500"></p>

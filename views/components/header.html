@@ -1,9 +1,21 @@
 {{ define "header" }}
 <header class="fixed flex items-center justify-start bg-light dark:bg-dark w-screen h-12 z-50">
-  <nav class="grid place-items-center grid-flow-col text-black dark:text-white gap-4 items-center px-4 py-4 bg-transparent">
-    <a href="/" class="text-md 2xl:text-lg self-start">/home</a>
-    <a href="/articles" class="text-md 2xl:text-lg self-start">/articles</a>
-    <a href="/dashboard" class="text-md 2xl:text-lg self-end">/dashboard</a>
+  <nav class="flex flex-row justify-start w-full text-black dark:text-white gap-6 items-center px-4 py-4 bg-transparent">
+    <a href="/" class="text-md 2xl:text-lg">/home</a>
+    <a href="/articles" class="text-md 2xl:text-lg">/articles</a>
+    <a href="/dashboard" class="text-md 2xl:text-lg">/dashboard</a>
+    {{ if .IsLogged }}
+    <div class="w-full flex items-center justify-end gap-4">
+      <a href="/internal/auth/logout" class="text-md 2xl:text-lg">/logout</a>
+      {{ if .User.Avatar }}
+      <img src="{{ .User.Avatar }}" alt="User avatar" class="clip-circle">
+      {{ end }}
+    </div>
+    {{ else }}
+    <div class="w-full flex items-center justify-end">
+      <a href="/auth/login" class="text-md 2xl:text-lg">/login</a>
+    </div>
+    {{ end }}
   </nav>
 </header>
 {{ end }}

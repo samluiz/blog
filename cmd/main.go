@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/gob"
 	"log"
 	"os"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"github.com/samluiz/blog/api/middlewares/isinternal"
 	"github.com/samluiz/blog/api/middlewares/islogged"
 	"github.com/samluiz/blog/api/routes"
+	"github.com/samluiz/blog/api/types"
 	"github.com/samluiz/blog/pkg/config"
 	"github.com/samluiz/blog/pkg/user"
 )
@@ -32,6 +34,7 @@ func main() {
 
 	// Session
 	store := session.New()
+	gob.Register(types.SessionUser{})
 
 	// Html template
 	engine := html.New("views", ".html")
@@ -50,6 +53,8 @@ func main() {
 			if code == fiber.StatusNotFound {
 				return c.Redirect("/error/404")
 			}
+
+			log.Printf("error: %v", err)
 
 			return c.Redirect("/error?status=" + strconv.Itoa(code))
 		},
