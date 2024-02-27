@@ -8,6 +8,7 @@ type GithubOAuthResponse struct {
 
 type GithubUserResponse struct {
 	Name      string `json:"name"`
+	ID        int    `json:"id"`
 	Login     string `json:"login"`
 	AvatarURL string `json:"avatar_url"`
 }

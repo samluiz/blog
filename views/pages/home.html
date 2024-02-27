@@ -7,14 +7,14 @@
         isOpen: false,
         loaded: true
         }" x-init="setTimeout(() => { loaded = false; }, 3000)" class="relative">
-        <h1 x-bind:class="{ 'blink': loaded }" @mouseenter="isOpen = true" @mouseleave="isOpen = false" class="text-4xl font-title mt-4 select-none cursor-pointer text-black dark:text-light">@samluiz</h1>
+        <h1 x-bind:class="{ 'blink': loaded }" @mouseenter="isOpen = true" @mouseleave="setTimeout(() => { isOpen = false; }, 500)" class="text-4xl font-title mt-4 select-none cursor-pointer text-black dark:text-light">@samluiz</h1>
         <ul x-data="{
           socials: [
             { name: 'github', link: 'https://github.com/samluiz' },
             { name: 'xwitter', link: 'https://x.com/samluiz_x' },
             { name: 'linkedin', link: 'https://www.linkedin.com/in/samuelluizrl/' }
             ]
-          }" x-show="isOpen" @mouseenter="isOpen = true" @mouseleave="isOpen = false" class="absolute mt-1 w-full bg-light dark:bg-dark">
+          }" x-show="isOpen" @mouseenter="isOpen = true" @mouseleave="setTimeout(() => { isOpen = false; }, 500)" class="absolute mt-1 w-full bg-light dark:bg-dark">
           <template x-for="social in socials" :key="social.name">
             <li class="py-2 px-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 duration-150">
               <a :href="social.link" target="_blank" class="grid place-items-center grid-flow-col space-x-2">

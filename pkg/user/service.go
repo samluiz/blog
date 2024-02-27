@@ -5,8 +5,8 @@ import "github.com/samluiz/blog/pkg/types"
 type Service interface {
 	FindUserById(id int) (*types.GetUserOutput, error)
 	FindUserByUsername(username string) (*types.GetUserOutput, error)
-	FindExternalUserByUsername(username string) (*types.GetExternalUserOutput, error)
-	FindExternalUserById(id int) (*types.GetExternalUserOutput, error)
+	FindExternalUserByUsername(username string, provider string) (*types.GetExternalUserOutput, error)
+	FindExternalUserByProviderId(id int, provider string) (*types.GetExternalUserOutput, error)
 	SaveUser(user *types.CreateExternalUserInput) (*types.GetExternalUserOutput, error)
 }
 
@@ -26,12 +26,12 @@ func (s *service) FindUserByUsername(username string) (*types.GetUserOutput, err
 	return s.repo.FindUserByUsername(username)
 }
 
-func (s *service) FindExternalUserByUsername(username string) (*types.GetExternalUserOutput, error) {
-	return s.repo.FindExternalUserByUsername(username)
+func (s *service) FindExternalUserByUsername(username string, provider string) (*types.GetExternalUserOutput, error) {
+	return s.repo.FindExternalUserByUsername(username, provider)
 }
 
-func (s *service) FindExternalUserById(id int) (*types.GetExternalUserOutput, error) {
-	return s.repo.FindExternalUserById(id)
+func (s *service) FindExternalUserByProviderId(id int, provider string) (*types.GetExternalUserOutput, error) {
+	return s.repo.FindExternalUserByProviderId(id, provider)
 }
 
 func (s *service) SaveUser(user *types.CreateExternalUserInput) (*types.GetExternalUserOutput, error) {

@@ -11,8 +11,8 @@ type Repository interface {
 	UserExistsById(id int) error
 	FindUserById(id int) (*types.GetUserOutput, error)
 	FindUserByUsername(username string) (*types.GetUserOutput, error)
-	FindExternalUserByUsername(username string) (*types.GetExternalUserOutput, error)
-	FindExternalUserById(id int) (*types.GetExternalUserOutput, error)
+	FindExternalUserByUsername(username string, provider string) (*types.GetExternalUserOutput, error)
+	FindExternalUserByProviderId(id int, provider string) (*types.GetExternalUserOutput, error)
 	FindUsers() ([]*types.GetUserOutput, error)
 	SaveUser(user *types.CreateExternalUserInput) (*types.GetExternalUserOutput, error)
 }
@@ -67,9 +67,9 @@ func (r *repository) FindUserByUsername(username string) (*types.GetUserOutput, 
 	return &user, nil
 }
 
-func (r *repository) FindExternalUserByUsername(username string) (*types.GetExternalUserOutput, error) {
+func (r *repository) FindExternalUserByUsername(username string, provider string) (*types.GetExternalUserOutput, error) {
 	var user types.GetExternalUserOutput
-	err := r.db.Get(&user, "SELECT id, name, username, provider, avatar, created_at, updated_at FROM external_users WHERE username = ?", username)
+	err := r.db.Get(&user, "SELECT id, name, username, provider, avatar, created_at, updated_at FROM external_users WHERE provider = ? AND username = ?", provider, username)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -81,9 +81,9 @@ func (r *repository) FindExternalUserByUsername(username string) (*types.GetExte
 	return &user, nil
 }
 
-func (r *repository) FindExternalUserById(id int) (*types.GetExternalUserOutput, error) {
+func (r *repository) FindExternalUserByProviderId(id int, provider string) (*types.GetExternalUserOutput, error) {
 	var user types.GetExternalUserOutput
-	err := r.db.Get(&user, "SELECT id, name, username, provider, avatar, created_at, updated_at FROM external_users WHERE id = ?", id)
+	err := r.db.Get(&user, "SELECT id, name, username, provider, avatar, created_at, updated_at FROM external_users WHERE provider = ? AND provider_id = ?", provider, id)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -105,15 +105,15 @@ func (r *repository) FindUsers() ([]*types.GetUserOutput, error) {
 }
 
 func (r *repository) SaveUser(user *types.CreateExternalUserInput) (*types.GetExternalUserOutput, error) {
-	result, err := r.db.Exec("INSERT INTO external_users (name, username, provider, avatar) VALUES (?, ?, ?, ?)", user.Username, user.Username, user.Provider, user.Avatar)
+	result, err := r.db.Exec("INSERT INTO external_users (provider_id, name, username, provider, avatar) VALUES (?, ?, ?, ?, ?)", user.ProviderId, user.Name, user.Username, user.Provider, user.Avatar)
 	if err != nil {
 		return nil, err
 	}
 
-	id, err := result.LastInsertId()
+	_, err = result.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
 
-	return r.FindExternalUserById(int(id))
+	return r.FindExternalUserByProviderId(user.ProviderId, user.Provider)
 }

@@ -26,10 +26,11 @@ type GetUserOutput struct {
 }
 
 type CreateExternalUserInput struct {
-	Name     string `json:"name"`
-	Username string `json:"username"`
-	Provider string `json:"provider"`
-	Avatar   string `json:"avatar"`
+	ProviderId int    `json:"provider_id"`
+	Name       string `json:"name"`
+	Username   string `json:"username"`
+	Provider   string `json:"provider"`
+	Avatar     string `json:"avatar"`
 }
 
 type GetExternalUserOutput struct {

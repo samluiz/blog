@@ -11,6 +11,7 @@ import (
 	"github.com/samluiz/blog/api/parsers"
 	apiTypes "github.com/samluiz/blog/api/types"
 	"github.com/samluiz/blog/common/logger"
+	"github.com/samluiz/blog/common/providers"
 	"github.com/samluiz/blog/pkg/types"
 	"github.com/samluiz/blog/pkg/user"
 	"golang.org/x/crypto/bcrypt"
@@ -272,16 +273,17 @@ func (r *router) GithubCallback(c *fiber.Ctx) error {
 		return c.Redirect("/auth/login")
 	}
 
-	user, err := r.userService.FindExternalUserByUsername(userInfo.Login)
+	user, err := r.userService.FindExternalUserByProviderId(userInfo.ID, providers.GITHUB)
 
 	if err != nil {
 		if errors.Is(err, types.ErrUserNotFound) {
 			LOGGER.Info("user not found. creating user...")
 			newUser := &types.CreateExternalUserInput{
-				Name:     userInfo.Name,
-				Username: userInfo.Login,
-				Provider: "github",
-				Avatar:   userInfo.AvatarURL,
+				ProviderId: userInfo.ID,
+				Name:       userInfo.Name,
+				Username:   userInfo.Login,
+				Provider:   providers.GITHUB,
+				Avatar:     userInfo.AvatarURL,
 			}
 			user, err = r.userService.SaveUser(newUser)
 			if err != nil {
