@@ -24,7 +24,9 @@ FROM centos:latest AS run
 WORKDIR /app
 
 COPY --from=build /app/bin ./
-COPY --from=build /app/static ./static
+COPY --from=build /app/static/assets ./static/assets
+COPY --from=build /app/static/js ./static/js
+COPY --from=build /app/static/css ./static/css
 COPY --from=build /app/views ./views
 COPY --from=tailwind /app/static/css/tailwind.css ./static/css
 

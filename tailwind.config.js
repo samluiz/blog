@@ -11,8 +11,8 @@ module.exports = {
         'gray-dark': '#aaaaaa',
       },
       fontFamily: {
-        'body': ['Scope One', 'sans-serif'],
-        'title': ['Post No Bills Colombo', 'sans-serif'],
+        body: ['scope-one', 'sans-serif'],
+        title: ['post-no-bills-colombo', 'sans-serif'],
       },
     },
   },
