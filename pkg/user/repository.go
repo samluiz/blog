@@ -11,7 +11,10 @@ type Repository interface {
 	UserExistsById(id int) error
 	FindUserById(id int) (*types.GetUserOutput, error)
 	FindUserByUsername(username string) (*types.GetUserOutput, error)
+	FindExternalUserByUsername(username string) (*types.GetExternalUserOutput, error)
+	FindExternalUserById(id int) (*types.GetExternalUserOutput, error)
 	FindUsers() ([]*types.GetUserOutput, error)
+	SaveUser(user *types.CreateExternalUserInput) (*types.GetExternalUserOutput, error)
 }
 
 type repository struct {
@@ -64,6 +67,34 @@ func (r *repository) FindUserByUsername(username string) (*types.GetUserOutput, 
 	return &user, nil
 }
 
+func (r *repository) FindExternalUserByUsername(username string) (*types.GetExternalUserOutput, error) {
+	var user types.GetExternalUserOutput
+	err := r.db.Get(&user, "SELECT id, name, username, provider, avatar, created_at, updated_at FROM external_users WHERE username = ?", username)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, types.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r *repository) FindExternalUserById(id int) (*types.GetExternalUserOutput, error) {
+	var user types.GetExternalUserOutput
+	err := r.db.Get(&user, "SELECT id, name, username, provider, avatar, created_at, updated_at FROM external_users WHERE id = ?", id)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, types.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (r *repository) FindUsers() ([]*types.GetUserOutput, error) {
 	var users []*types.GetUserOutput
 	err := r.db.Select(&users, "SELECT id, username, is_admin, avatar, created_at, updated_at FROM users")
@@ -71,4 +102,18 @@ func (r *repository) FindUsers() ([]*types.GetUserOutput, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+func (r *repository) SaveUser(user *types.CreateExternalUserInput) (*types.GetExternalUserOutput, error) {
+	result, err := r.db.Exec("INSERT INTO external_users (name, username, provider, avatar) VALUES (?, ?, ?, ?)", user.Username, user.Username, user.Provider, user.Avatar)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	return r.FindExternalUserById(int(id))
 }

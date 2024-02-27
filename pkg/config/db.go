@@ -14,12 +14,23 @@ import (
 var createTableStatement = `
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name TEXT NOT NULL,
     username TEXT NOT NULL,
     password TEXT NOT NULL,
     is_admin BOOLEAN DEFAULT 0,
     avatar TEXT DEFAULT '',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS external_users (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name TEXT NOT NULL,
+	username TEXT NOT NULL,
+	avatar TEXT DEFAULT '',
+	provider TEXT NOT NULL,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS articles (
@@ -69,6 +80,7 @@ func NewConnection() (*sqlx.DB, error) {
 
 func initUser(db *sqlx.DB) error {
 	log.Default().Println("Initializing admin user...")
+	name := os.Getenv("ADMIN_NAME")
 	username := os.Getenv("ADMIN_USERNAME")
 
 	var userExists bool
@@ -93,7 +105,7 @@ func initUser(db *sqlx.DB) error {
 
 	password := string(hashed)
 
-	_, err = db.Exec("INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)", username, password, 1)
+	_, err = db.Exec("INSERT INTO users (name, username, password, is_admin) VALUES (?, ?, ?, ?)", name, username, password, true)
 
 	if err != nil {
 		log.Default().Printf("Error creating admin user: %v", err)

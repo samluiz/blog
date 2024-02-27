@@ -25,6 +25,23 @@ type GetUserOutput struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
+type CreateExternalUserInput struct {
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Provider string `json:"provider"`
+	Avatar   string `json:"avatar"`
+}
+
+type GetExternalUserOutput struct {
+	ID        int       `db:"id"`
+	Name      string    `db:"name"`
+	Username  string    `db:"username"`
+	Provider  string    `db:"provider"`
+	Avatar    string    `db:"avatar"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+}
+
 var (
 	ErrUserNotFound     = errors.New("user not found")
 	ErrUserUnauthorized = errors.New("user is not authorized")

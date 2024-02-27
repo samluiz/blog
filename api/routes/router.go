@@ -29,6 +29,7 @@ type Router interface {
 	AdminArticlesPartial(c *fiber.Ctx) error
 	Authenticate(c *fiber.Ctx) error
 	Logout(c *fiber.Ctx) error
+	GithubCallback(c *fiber.Ctx) error
 	NotFoundPage(c *fiber.Ctx) error
 	ErrorPage(c *fiber.Ctx) error
 }
@@ -105,7 +106,7 @@ func (r *router) LoginPage(c *fiber.Ctx) error {
 
 	if err != nil {
 		LOGGER.Error("error getting session: %v", err)
-		return c.SendStatus(fiber.StatusInternalServerError)
+		return fiber.ErrInternalServerError
 	}
 
 	isLogged := session.Get(IS_LOGGED)
@@ -115,8 +116,11 @@ func (r *router) LoginPage(c *fiber.Ctx) error {
 		return c.Redirect(DASHBOARD_URL)
 	}
 
+	githubUrl := integrations.GetGithubAuthURL()
+
 	return c.Render("pages/login", fiber.Map{
 		"PageTitle": "login",
+		"GithubURL": githubUrl,
 		"Redirect":  redirect,
 	})
 }
@@ -186,6 +190,72 @@ func (r *router) Logout(c *fiber.Ctx) error {
 	}
 
 	session.Destroy()
+
+	return c.Redirect("/")
+}
+
+func (r *router) GithubCallback(c *fiber.Ctx) error {
+	code := c.Query("code")
+
+	if code == "" {
+		return c.Redirect("/auth/login")
+	}
+
+	githubResponse, err := integrations.ExchangeGithubToken(code)
+
+	if err != nil {
+		LOGGER.Error(err.Error())
+		return c.Redirect("/auth/login")
+	}
+
+	session, err := r.store.Get(c)
+
+	if err != nil {
+		LOGGER.Error("error getting session: %v", err)
+		return fiber.ErrInternalServerError
+	}
+
+	userInfo, err := integrations.GetGithubUserInfo(githubResponse.AccessToken)
+
+	if err != nil {
+		LOGGER.Error(err.Error())
+		return c.Redirect("/auth/login")
+	}
+
+	user, err := r.userService.FindExternalUserByUsername(userInfo.Login)
+
+	if err != nil {
+		if errors.Is(err, types.ErrUserNotFound) {
+			LOGGER.Info("user not found. creating user...")
+			newUser := &types.CreateExternalUserInput{
+				Name:     userInfo.Name,
+				Username: userInfo.Login,
+				Provider: "github",
+				Avatar:   userInfo.AvatarURL,
+			}
+			user, err = r.userService.SaveUser(newUser)
+			if err != nil {
+				LOGGER.Error(err.Error())
+				return c.Redirect("/auth/login")
+			}
+		} else {
+			LOGGER.Error(err.Error())
+			return c.Redirect("/auth/login")
+		}
+	}
+
+	session.Set(IS_LOGGED, true)
+	session.Set("github_token", githubResponse.AccessToken)
+	session.Set("username", user.Username)
+	session.Set("provider", user.Provider)
+	session.Set("is_admin", false)
+
+	err = session.Save()
+
+	if err != nil {
+		LOGGER.Error("error saving session: %v", err)
+		return c.Redirect("/auth/login")
+	}
 
 	return c.Redirect("/")
 }

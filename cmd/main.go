@@ -76,6 +76,7 @@ func main() {
 		Session: store,
 	})
 
+	// Middleware that checks if request is internal
 	isinternal := isinternal.New()
 
 	// Internal routes
@@ -97,6 +98,7 @@ func main() {
 
 	// Blog routes
 	app.Get("/auth/login", router.LoginPage)
+	app.Get("/auth/github/callback", router.GithubCallback)
 	app.Get("/articles/:slug", router.ArticlePage)
 	app.Get("/articles", router.ArticlesPage)
 
@@ -109,6 +111,7 @@ func main() {
 
 	// Auth routes
 	internal.Post("/auth/login", router.Authenticate)
+	internal.Get("/auth/logout", router.Logout)
 
 	// Server
 	port := os.Getenv("PORT")
