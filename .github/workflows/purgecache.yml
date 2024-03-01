@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  curl-request:
+  purge-cache:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -13,7 +13,7 @@ jobs:
 
       - name: Purge cache
         run: |
-          curl -X POST "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache"
-          -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
-          -H "Content-Type: application/json"
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+          -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+          -H "Content-Type: application/json" \
           --data '{"purge_everything": true}'
