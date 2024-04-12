@@ -22,7 +22,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       
       - name: Build and push Docker image
-        working-directory: ./scripts/docker
         run: |
           docker build -t samluiz/blog:latest .
           docker push samluiz/blog:latest
