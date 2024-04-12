@@ -33,6 +33,6 @@ jobs:
           username: ${{ secrets.ORACLE_SSH_USERNAME }}
           key: ${{ secrets.ORACLE_SSH_PRIVATE_KEY }}
           script: |
-            docker pull samluiz/blog:latest
+            sudo docker pull samluiz/blog:latest
             cd blog
-            docker-compose up -d --build
+            sudo docker-compose up -d --build
