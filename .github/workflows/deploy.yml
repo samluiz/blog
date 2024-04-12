@@ -33,6 +33,8 @@ jobs:
           username: ${{ secrets.ORACLE_SSH_USERNAME }}
           key: ${{ secrets.ORACLE_SSH_PRIVATE_KEY }}
           script: |
+            sudo docker stop blog
+            sudo docker rm blog
             sudo docker pull samluiz/blog:latest
             cd blog
             sudo docker run -d -t -i -e ADMIN_NAME -e ADMIN_PASSWORD -e ADMIN_USERNAME -e DATABASE_URL -e DEV_TO_API_KEY -e GITHUB_CLIENT_ID -e GITHUB_REDIRECT_URI -e GITHUB_SECRET_KEY -e PORT -e TURSO_AUTH_TOKEN --name blog samluiz/blog:latest
