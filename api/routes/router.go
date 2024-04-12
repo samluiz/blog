@@ -68,6 +68,7 @@ func (r *router) HomePage(c *fiber.Ctx) error {
 		"User":        user,
 		"PageTitle":   "home",
 		"Description": "My personal portfolio, but also a blog about software development, programming, and technology. Articles about web development, backend, frontend, and whatever i wanna share.",
+		"Route":       "",
 		"Error":       err,
 	})
 }
@@ -99,6 +100,7 @@ func (r *router) ArticlePage(c *fiber.Ctx) error {
 		"Markdown":    markdownContent,
 		"PageTitle":   article.Slug,
 		"Description": article.Description,
+		"Route":       "articles/" + article.Slug,
 		"Error":       err,
 	})
 }
@@ -125,6 +127,7 @@ func (r *router) ArticlesPage(c *fiber.Ctx) error {
 		"User":        user,
 		"PageTitle":   "articles",
 		"Description": "Articles about web development, backend, frontend, and whatever i wanna share.",
+		"Route":       "articles",
 		"Error":       err,
 	})
 }
