@@ -98,7 +98,7 @@ func (r *router) ArticlePage(c *fiber.Ctx) error {
 		"IsLogged":    isLogged,
 		"User":        user,
 		"Markdown":    markdownContent,
-		"PageTitle":   article.Slug,
+		"PageTitle":   article.Title,
 		"Description": article.Description,
 		"Route":       "articles/" + article.Slug,
 		"Error":       err,
