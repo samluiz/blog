@@ -11,4 +11,5 @@ type GithubUserResponse struct {
 	ID        int    `json:"id"`
 	Login     string `json:"login"`
 	AvatarURL string `json:"avatar_url"`
+	Bio       string `json:"bio"`
 }

@@ -50,7 +50,7 @@ func ExchangeGithubToken(code string) (*types.GithubOAuthResponse, error) {
 	return &githubResponse, nil
 }
 
-func GetGithubUserInfo(accessToken string) (*types.GithubUserResponse, error) {
+func GetGithubAuthUserInfo(accessToken string) (*types.GithubUserResponse, error) {
 	var githubUserResponse types.GithubUserResponse
 
 	log.Default().Println("getting user info from github")
@@ -74,4 +74,27 @@ func GetGithubUserInfo(accessToken string) (*types.GithubUserResponse, error) {
 	}
 
 	return &githubUserResponse, nil
+}
+
+func GetGithubBio(user string) (string, error) {
+	var githubUserResponse types.GithubUserResponse
+
+	log.Default().Println("getting github description...")
+
+	request := fiber.Get(GITHUB_API_BASE_URL + "/users/" + user)
+	request.Request().Header.Set("Accept", "application/vnd.github+json")
+
+	status, response, err := request.Bytes()
+
+	if (status != 200) || (err != nil) {
+		return "", errors.New("error getting user info from github: " + string(response))
+	}
+
+	jsonErr := json.Unmarshal(response, &githubUserResponse)
+
+	if jsonErr != nil {
+		return "", jsonErr
+	}
+
+	return githubUserResponse.Bio, nil
 }

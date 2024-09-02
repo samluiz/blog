@@ -62,10 +62,18 @@ func (r *router) HomePage(c *fiber.Ctx) error {
 	isLogged := session.Get(IS_LOGGED)
 	user := session.Get("user")
 
+	bio, err := integrations.GetGithubBio("samluiz")
+
+	if err != nil {
+		LOGGER.Error(err.Error())
+		bio = "Software Engineer."
+	}
+
 	return c.Render("pages/home", fiber.Map{
 		"Articles":    articles,
 		"IsLogged":    isLogged,
 		"User":        user,
+		"Bio":         bio,
 		"PageTitle":   "home",
 		"Description": "My personal portfolio, but also a blog about software development, programming, and technology. Articles about web development, backend, frontend, and whatever i wanna share.",
 		"Route":       "",
@@ -269,7 +277,7 @@ func (r *router) GithubCallback(c *fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 
-	userInfo, err := integrations.GetGithubUserInfo(githubResponse.AccessToken)
+	userInfo, err := integrations.GetGithubAuthUserInfo(githubResponse.AccessToken)
 
 	if err != nil {
 		LOGGER.Error(err.Error())
